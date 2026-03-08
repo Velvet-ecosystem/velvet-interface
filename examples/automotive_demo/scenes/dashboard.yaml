@@ -1,0 +1,35 @@
+# Automotive Demo - Dashboard Scene
+name: "auto_dashboard"
+base_resolution: [1920, 720]  # Wide automotive display
+background: "assets/dashboard_bg.png"
+
+regions:
+  - name: "climate_zone"
+    polygon: [[100, 100], [400, 100], [400, 300], [100, 300]]
+    action: "navigate:auto_climate"
+    metadata:
+      tooltip: "Climate Controls"
+      zone: "left"
+  
+  - name: "navigation_zone"
+    polygon: [[760, 100], [1160, 100], [1160, 600], [760, 600]]
+    action: "navigate:auto_navigation"
+    metadata:
+      tooltip: "Navigation"
+      zone: "center"
+  
+  - name: "media_zone"
+    polygon: [[1520, 100], [1820, 100], [1820, 300], [1520, 300]]
+    action: "navigate:auto_media"
+    metadata:
+      tooltip: "Media Player"
+      zone: "right"
+
+transitions:
+  enter: "slide_right"
+  exit: "slide_left"
+
+metadata:
+  description: "Automotive dashboard with three zones"
+  category: "automotive"
+  display_type: "wide"

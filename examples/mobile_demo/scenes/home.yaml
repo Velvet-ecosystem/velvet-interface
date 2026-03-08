@@ -1,0 +1,35 @@
+# Mobile Demo - Home Screen
+name: "mobile_home"
+base_resolution: [390, 844]  # iPhone-like dimensions
+background: "assets/mobile_home_bg.png"
+
+regions:
+  - name: "app_1"
+    polygon: [[50, 200], [180, 200], [180, 330], [50, 330]]
+    action: "navigate:mobile_app_1"
+    metadata:
+      tooltip: "App 1"
+      icon: "app1_icon.png"
+  
+  - name: "app_2"
+    polygon: [[210, 200], [340, 200], [340, 330], [210, 330]]
+    action: "navigate:mobile_app_2"
+    metadata:
+      tooltip: "App 2"
+      icon: "app2_icon.png"
+  
+  - name: "settings"
+    polygon: [[50, 700], [180, 700], [180, 800], [50, 800]]
+    action: "navigate:mobile_settings"
+    metadata:
+      tooltip: "Settings"
+      icon: "settings_icon.png"
+
+transitions:
+  enter: "fade"
+  exit: "slide_up"
+
+metadata:
+  description: "Mobile app home screen"
+  category: "mobile"
+  orientation: "portrait"

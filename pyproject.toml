@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "velvet-interface"
+version = "0.2.0"
+description = "Multi-surface interface framework for desktop, car dashboard, mobile, and web platforms"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Velvet AI", email = "noreply@velvet.ai" }
+]
+requires-python = ">=3.8"
+
+# Core dependencies
+dependencies = [
+    "PyYAML>=5.4.0",  # For YAML scene loading
+]
+
+# Optional dependencies for different surfaces
+[project.optional-dependencies]
+qt = ["PyQt5>=5.15.0"]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-qt>=4.0.0",
+    "black>=22.0.0",
+    "mypy>=0.950",
+]
+
+[tool.setuptools]
+packages = [
+    "velvet_interface",
+    "velvet_interface.core",
+    "velvet_interface.surfaces",
+    "velvet_interface.surfaces.pyqt",
+    "velvet_interface.scenes",
+    "velvet_interface.scene_system",
+    "velvet_interface.utils",
+]
+include-package-data = true
+
+[project.urls]
+Homepage = "https://velvet.ai"
+Documentation = "https://docs.velvet.ai/interface"
+Repository = "https://github.com/velvet-ai/velvet-interface"
+Issues = "https://github.com/velvet-ai/velvet-interface/issues"
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

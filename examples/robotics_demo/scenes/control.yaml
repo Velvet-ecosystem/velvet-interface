@@ -1,0 +1,48 @@
+# Robotics Demo - Robot Control Interface
+name: "robot_control"
+base_resolution: [1280, 800]  # Tablet/control station
+background: "assets/robot_control_bg.png"
+
+regions:
+  - name: "movement_pad"
+    polygon: [[100, 400], [400, 400], [400, 700], [100, 700]]
+    action: "emit:movement_control"
+    metadata:
+      tooltip: "Movement Control Pad"
+      control_type: "directional"
+  
+  - name: "arm_control"
+    polygon: [[880, 400], [1180, 400], [1180, 700], [880, 700]]
+    action: "navigate:robot_arm"
+    metadata:
+      tooltip: "Arm Control"
+      control_type: "manipulator"
+  
+  - name: "camera_feed"
+    polygon: [[450, 100], [830, 100], [830, 350], [450, 350]]
+    action: "navigate:robot_camera"
+    metadata:
+      tooltip: "Camera Feeds"
+      feed_count: 3
+  
+  - name: "status_bar"
+    polygon: [[100, 50], [1180, 50], [1180, 80], [100, 80]]
+    action: "navigate:robot_status"
+    metadata:
+      tooltip: "Robot Status"
+  
+  - name: "emergency"
+    polygon: [[1100, 720], [1200, 720], [1200, 780], [1100, 780]]
+    action: "emit:robot_stop"
+    metadata:
+      tooltip: "Emergency Stop"
+      priority: "critical"
+
+transitions:
+  enter: "slide_right"
+  exit: "slide_left"
+
+metadata:
+  description: "Robot control interface"
+  category: "robotics"
+  requires_confirmation: ["robot_stop", "movement_control"]

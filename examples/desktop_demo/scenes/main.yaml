@@ -1,0 +1,32 @@
+# Desktop Demo - Main Menu Scene
+name: "desktop_main"
+base_resolution: [1280, 720]
+background: "assets/desktop_bg.png"
+
+regions:
+  - name: "settings_button"
+    polygon: [[100, 100], [300, 100], [300, 180], [100, 180]]
+    action: "navigate:desktop_settings"
+    metadata:
+      tooltip: "Open Settings"
+      sound: "click.wav"
+  
+  - name: "about_button"
+    polygon: [[100, 200], [300, 200], [300, 280], [100, 280]]
+    action: "navigate:desktop_about"
+    metadata:
+      tooltip: "About This App"
+  
+  - name: "exit_button"
+    polygon: [[100, 300], [300, 300], [300, 380], [100, 380]]
+    action: "emit:app_exit"
+    metadata:
+      tooltip: "Exit Application"
+
+transitions:
+  enter: "fade"
+  exit: "slide_left"
+
+metadata:
+  description: "Desktop application main menu"
+  category: "desktop"

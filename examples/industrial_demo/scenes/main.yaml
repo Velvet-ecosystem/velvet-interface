@@ -1,0 +1,41 @@
+# Industrial Demo - Machine Control Panel
+name: "industrial_main"
+base_resolution: [1024, 768]  # Industrial HMI standard
+background: "assets/industrial_panel_bg.png"
+
+regions:
+  - name: "emergency_stop"
+    polygon: [[850, 50], [950, 50], [950, 150], [850, 150]]
+    action: "emit:emergency_stop"
+    metadata:
+      tooltip: "Emergency Stop"
+      priority: "critical"
+      color: "red"
+  
+  - name: "start_button"
+    polygon: [[100, 500], [300, 500], [300, 650], [100, 650]]
+    action: "emit:machine_start"
+    metadata:
+      tooltip: "Start Machine"
+      color: "green"
+  
+  - name: "status_panel"
+    polygon: [[400, 200], [900, 200], [900, 400], [400, 400]]
+    action: "navigate:industrial_status"
+    metadata:
+      tooltip: "Status Details"
+  
+  - name: "diagnostics"
+    polygon: [[100, 100], [300, 100], [300, 250], [100, 250]]
+    action: "navigate:industrial_diagnostics"
+    metadata:
+      tooltip: "System Diagnostics"
+
+transitions:
+  enter: "none"  # Industrial UIs typically no transitions
+  exit: "none"
+
+metadata:
+  description: "Industrial machine control panel"
+  category: "industrial"
+  safety_critical: true
