@@ -1,3 +1,11 @@
+# Velvet Ecosystem Code of Conduct
+
+The Velvet ecosystem is being built as a modular, offline-first system for embedded intelligence. That work depends on clear thinking, careful collaboration, and respect for the people building alongside us.
+
+We want Velvet spaces to be welcoming to builders, researchers, tinkerers, and contributors from different backgrounds and skill levels. Curiosity is welcome. Harassment, hostility, and contempt are not.
+
+This Code of Conduct exists to protect the people building Velvet and to keep the project healthy as it grows.
+
 # Code of Conduct
 
 ## Our Pledge
@@ -31,6 +39,9 @@ Instances of abusive, harassing, or otherwise unacceptable behavior may be repor
 All complaints will be reviewed and investigated promptly and fairly.
 
 Project maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned with this Code of Conduct.
+
+Velvet is built with structure, clarity, and respect.
+That standard applies to code and conduct alike.
 
 ## Attribution
 
