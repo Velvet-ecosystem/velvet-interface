@@ -6,6 +6,16 @@
 
 Velvet Interface provides a clean abstraction for building user interfaces that work across multiple rendering backends (surfaces). Write your UI logic once, render it anywhere.
 
+## Scene-Based Interface
+
+Velvet Interface implements the public scene and room-body interface model.
+
+Scenes may be expressive, contextual, hidden, and body-aware, but they only route intent. They do not directly actuate hardware.
+
+See:
+
+- [Scene Interface Contract](docs/scene_interface_contract.md)
+
 ## Features
 
 - **Surface-Agnostic Scenes:** Write UI logic once, render on Qt, web, mobile, or custom surfaces
