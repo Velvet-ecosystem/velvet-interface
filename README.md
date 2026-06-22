@@ -316,9 +316,9 @@ This is an early release. Production use is not recommended until 1.0.0.
 
 ## Links
 
-- **GitHub:** [github.com/velvet-ai/velvet-interface](https://github.com/velvet-ai/velvet-interface)
-- **Issues:** [GitHub Issues](https://github.com/velvet-ai/velvet-interface/issues)
-- **Documentation:** [docs.velvet.ai/interface](https://docs.velvet.ai/interface)
+- **GitHub:** [Velvet-ecosystem/velvet-interface](https://github.com/Velvet-ecosystem/velvet-interface)
+- **Issues:** [GitHub Issues](https://github.com/Velvet-ecosystem/velvet-interface/issues)
+- **Documentation:** [Repository documentation](https://github.com/Velvet-ecosystem/velvet-interface/tree/main/docs)
 
 ---
 
