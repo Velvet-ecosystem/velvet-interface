@@ -41,10 +41,10 @@ packages = [
 include-package-data = true
 
 [project.urls]
-Homepage = "https://velvet.ai"
-Documentation = "https://docs.velvet.ai/interface"
-Repository = "https://github.com/velvet-ai/velvet-interface"
-Issues = "https://github.com/velvet-ai/velvet-interface/issues"
+Homepage = "https://github.com/Velvet-ecosystem"
+Documentation = "https://github.com/Velvet-ecosystem/velvet-interface/tree/main/docs"
+Repository = "https://github.com/Velvet-ecosystem/velvet-interface"
+Issues = "https://github.com/Velvet-ecosystem/velvet-interface/issues"
 
 [tool.black]
 line-length = 100
