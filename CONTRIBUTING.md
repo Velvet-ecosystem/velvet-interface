@@ -10,14 +10,14 @@ This project adheres to a Code of Conduct. By participating, you agree to uphold
 
 ### Reporting Bugs
 
-- Check if the issue already exists in [GitHub Issues](https://github.com/velvet-ai/velvet-interface/issues)
+- Check whether the issue already exists in [GitHub Issues](https://github.com/Velvet-ecosystem/velvet-interface/issues)
 - Provide clear steps to reproduce
 - Include Python version, OS, and relevant error messages
 - Specify which surface (Qt, web, etc.) you're using
 
 ### Suggesting Features
 
-- Open a discussion in [GitHub Discussions](https://github.com/velvet-ai/velvet-interface/discussions)
+- Open an issue in [GitHub Issues](https://github.com/Velvet-ecosystem/velvet-interface/issues)
 - Describe the use case and expected behavior
 - Consider backward compatibility
 - Note which surfaces the feature would apply to
@@ -175,7 +175,7 @@ By contributing, you agree that your contributions will be licensed under the GP
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/velvet-ai/velvet-interface/discussions)
-- Check existing [Issues](https://github.com/velvet-ai/velvet-interface/issues)
+- Open an issue in [GitHub Issues](https://github.com/Velvet-ecosystem/velvet-interface/issues)
+- Review the repository [README](README.md) and documentation before opening a new question
 
 Thank you for contributing!
