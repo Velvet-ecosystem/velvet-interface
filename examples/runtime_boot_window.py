@@ -27,7 +27,7 @@ def run_window(model: BootStatusViewModel) -> int:
     try:
         from PyQt5.QtCore import Qt
         from PyQt5.QtGui import QFont
-        from PyQt5.QtWidgets import QApplication, QFrame, QLabel, QVBoxLayout, QWidget
+        from PyQt5.QtWidgets import QApplication, QFrame, QGridLayout, QLabel, QVBoxLayout, QWidget
     except ImportError as exc:
         print("PyQt5 is required: pip install velvet-interface[qt]", file=sys.stderr)
         print(str(exc), file=sys.stderr)
@@ -62,9 +62,10 @@ def run_window(model: BootStatusViewModel) -> int:
     root.addWidget(subtitle)
 
     panel = QFrame()
-    panel_layout = QVBoxLayout(panel)
+    panel_layout = QGridLayout(panel)
     panel_layout.setContentsMargins(28, 22, 28, 22)
-    panel_layout.setSpacing(8)
+    panel_layout.setHorizontalSpacing(28)
+    panel_layout.setVerticalSpacing(8)
 
     rows = (
         ("Continuity", model.continuity),
@@ -73,16 +74,28 @@ def run_window(model: BootStatusViewModel) -> int:
         ("Routes", model.routes),
         ("Physical Control", model.physical_control),
     )
-    for label_text, value_text in rows:
-        row = QLabel(f"<span style='color:#8d93a3'>{label_text:<18}</span>  {value_text}")
-        row.setTextFormat(Qt.RichText)
-        row.setFont(QFont("Monospace", 13))
-        panel_layout.addWidget(row)
+    for row_index, (label_text, value_text) in enumerate(rows):
+        label = QLabel(label_text)
+        label.setObjectName("label")
+        label.setTextFormat(Qt.PlainText)
+        label.setFont(QFont("Monospace", 13))
 
+        value = QLabel(value_text)
+        value.setObjectName("value")
+        value.setTextFormat(Qt.PlainText)
+        value.setFont(QFont("Monospace", 13))
+        value.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+
+        panel_layout.addWidget(label, row_index, 0)
+        panel_layout.addWidget(value, row_index, 1)
+
+    panel_layout.setColumnStretch(0, 1)
+    panel_layout.setColumnStretch(1, 1)
     root.addWidget(panel)
 
     message = QLabel(model.message)
     message.setObjectName("message")
+    message.setTextFormat(Qt.PlainText)
     message.setAlignment(Qt.AlignCenter)
     message.setWordWrap(True)
     message.setFont(QFont("Sans Serif", 12))
