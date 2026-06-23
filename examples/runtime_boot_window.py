@@ -8,6 +8,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 from velvet_interface.boot_status import BootStatusViewModel, load_boot_snapshot
 
@@ -105,7 +106,7 @@ def run_window(model: BootStatusViewModel) -> int:
     return app.exec_()
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     model = load_boot_snapshot(args.snapshot)
     return run_window(model)
