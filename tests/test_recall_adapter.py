@@ -17,20 +17,19 @@ class RecallAdapterTests(unittest.TestCase):
         self.assertEqual(card["score"], 0.985)
         self.assertEqual(card["authority_status"], "accepted")
         self.assertEqual(card["receipt_id"], "receipt-1")
-        self.assertNotIn("authority_weight", card)
-        self.assertNotIn("record", card)
+        self.assertNotIn("status_weight", card)
         self.assertFalse(card["truth_claimed"])
         self.assertFalse(card["authority_granted"])
 
-    def test_rejects_private_nested_fields(self):
+    def test_rejects_private_fields(self):
         document = self.fixture()
-        document["record"]["raw_memory"] = "hidden"
+        document["raw_memory"] = "hidden"
         with self.assertRaises(ValueError):
             recall_card_from_runtime_result(document)
 
-    def test_rejects_event_id_mismatch(self):
+    def test_rejects_missing_public_metadata(self):
         document = self.fixture()
-        document["score"]["event_id"] = "other"
+        document.pop("memory_kind")
         with self.assertRaises(ValueError):
             recall_card_from_runtime_result(document)
 
