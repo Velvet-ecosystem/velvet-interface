@@ -1,4 +1,5 @@
 # velvet_interface/scenes/diagnostics_scene.py
+from __future__ import annotations
 """
 Generic diagnostics scene example.
 
