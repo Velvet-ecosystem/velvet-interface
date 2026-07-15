@@ -1,0 +1,25 @@
+{
+  "event_type": "vehicle.can.ghost_observation",
+  "receipt_id": "ghost-can-receipt-demo-0001",
+  "payload": {
+    "status": "observation-only",
+    "source": "velvet-runtime-can-ghost",
+    "source_profile": "tiburon-public-ghost",
+    "read_only": true,
+    "synthetic": true,
+    "synthetic_fixture": true,
+    "physical_bus_opened": false,
+    "hardware_bus_opened": false,
+    "can_transmission_attempted": false,
+    "can_transmission_performed": false,
+    "actuation_granted": false,
+    "actuation_performed": false,
+    "authority_granted": false,
+    "signals": [
+      {"name": "vehicle_speed", "value": 0, "unit": "km/h", "confidence": 1.0, "observed_at": 1.0, "source_profile": "tiburon-public-ghost"},
+      {"name": "engine_rpm", "value": 0, "unit": "rpm", "confidence": 0.96, "observed_at": 1.0, "source_profile": "tiburon-public-ghost"},
+      {"name": "ignition_state", "value": "off", "confidence": 1.0, "observed_at": 1.0, "source_profile": "tiburon-public-ghost"},
+      {"name": "o2_fault", "value": "simulated", "confidence": 0.87, "observed_at": 1.0, "source_profile": "tiburon-public-ghost"}
+    ]
+  }
+}
