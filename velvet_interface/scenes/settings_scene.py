@@ -1,4 +1,5 @@
 # velvet_interface/scenes/settings_scene.py
+from __future__ import annotations
 """
 Generic settings scene example.
 
