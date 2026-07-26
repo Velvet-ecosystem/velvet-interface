@@ -1,11 +1,20 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
+import importlib.util
 import unittest
 
+from velvet_interface import InterfaceLifecycle as RootInterfaceLifecycle
 from velvet_interface.lifecycle import InterfaceLifecycle
 
 
 class TestInterfaceLifecycle(unittest.TestCase):
+    def test_package_and_lifecycle_modules_are_discoverable(self) -> None:
+        self.assertIsNotNone(importlib.util.find_spec("velvet_interface"))
+        self.assertIsNotNone(importlib.util.find_spec("velvet_interface.lifecycle"))
+
+    def test_package_root_exports_same_lifecycle_contract(self) -> None:
+        self.assertIs(RootInterfaceLifecycle, InterfaceLifecycle)
+
     def test_starts_inactive(self) -> None:
         lifecycle = InterfaceLifecycle()
         self.assertFalse(lifecycle.runtime_started)
