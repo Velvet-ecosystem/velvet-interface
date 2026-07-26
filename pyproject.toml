@@ -36,7 +36,6 @@ packages = [
     "velvet_interface.surfaces.pyqt",
     "velvet_interface.scenes",
     "velvet_interface.scene_system",
-    "velvet_interface.utils",
 ]
 include-package-data = true
 
