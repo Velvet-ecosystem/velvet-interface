@@ -7,8 +7,8 @@ import logging
 from typing import Any, Callable, Mapping, Optional
 
 try:
-    from PyQt5.QtCore import QPoint, Qt
-    from PyQt5.QtGui import QColor, QFont, QPainter, QPen, QPixmap
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtGui import QFont, QPixmap
     from PyQt5.QtWidgets import QLabel, QWidget
 
     PYQT_AVAILABLE = True
@@ -29,9 +29,9 @@ class QtImageSceneWidget(QWidget):
     a widget only when trusted application code has registered that widget ID.
     Missing widgets stay absent and are never replaced with synthetic values.
 
-    ``placement_debug`` draws authoring outlines. ``coordinate_sink`` receives
-    normalized click coordinates so a background can be mapped directly on the
-    real target display.
+    ``placement_debug`` draws authoring outlines above the artwork.
+    ``coordinate_sink`` receives normalized click coordinates so the real target
+    display can be mapped directly.
     """
 
     def __init__(
@@ -56,6 +56,7 @@ class QtImageSceneWidget(QWidget):
         self.placement_debug = bool(placement_debug)
         self.coordinate_sink = coordinate_sink
         self._placed_widgets = []
+        self._placement_overlay = None
 
         target_width, target_height = surface.get_dimensions()
         scene.setup_scaling((target_width, target_height))
@@ -68,6 +69,14 @@ class QtImageSceneWidget(QWidget):
         self.background_label.setTextFormat(Qt.PlainText)
         self._load_background()
         self._place_widgets()
+
+        if self.placement_debug:
+            from velvet_interface.surfaces.pyqt.placement_overlay import (
+                QtPlacementOverlay,
+            )
+
+            self._placement_overlay = QtPlacementOverlay(scene, self)
+
         logger.debug("Qt image surface created for %s", scene.scene_id)
 
     def _load_background(self) -> None:
@@ -180,34 +189,3 @@ class QtImageSceneWidget(QWidget):
             )
         else:
             logger.warning("Rejected unsupported surface action: %s", action)
-
-    def paintEvent(self, event: Any) -> None:
-        super().paintEvent(event)
-        if self.placement_debug:
-            self._draw_placement_overlay()
-
-    def _draw_placement_overlay(self) -> None:
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-
-        region_pen = QPen(QColor(255, 90, 90, 210))
-        region_pen.setWidth(2)
-        painter.setPen(region_pen)
-        for region in self.scene.region_manager.regions:
-            points = [
-                QPoint(int(round(x)), int(round(y)))
-                for x, y in self.scene.scaled_region_polygon(region)
-            ]
-            for index, point in enumerate(points):
-                painter.drawLine(point, points[(index + 1) % len(points)])
-            if points:
-                painter.drawText(points[0] + QPoint(5, -5), region.name)
-
-        widget_pen = QPen(QColor(90, 190, 255, 210))
-        widget_pen.setWidth(2)
-        painter.setPen(widget_pen)
-        for placement in self.scene.widget_placements:
-            x, y, width, height = self.scene.widget_rect(placement)
-            painter.drawRect(x, y, width, height)
-            painter.drawText(x + 5, y + 16, str(placement["widget_id"]))
-        painter.end()
