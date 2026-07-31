@@ -2,7 +2,64 @@ import unittest
 
 from velvet_interface.core.body_state import BodyStateStore
 from velvet_interface.scenes.diagnostics_scene import DiagnosticsScene
-from tests.test_body_state import health_record, sensor_record
+
+
+def sensor_record():
+    payload = {
+        "module_id": "gnss-main",
+        "node_id": "founder-up2",
+        "owning_handmaiden": "Navigator",
+        "timestamp": 100.0,
+        "monotonic_time": 10.0,
+        "sensor_type": "gnss",
+        "interface_type": "uart",
+        "health_state": "ONLINE",
+        "confidence": 0.97,
+        "payload": {"latitude": 43.0, "longitude": -79.0},
+        "receipt_id": "receipt-sensor-1",
+        "source_clock": "gnss",
+        "stale_after_ms": 1000,
+        "calibration_version": "m9n-v1",
+        "degraded_reason": None,
+        "raw_reference": "nmea:1",
+    }
+    return {
+        "event_id": payload["receipt_id"],
+        "event_type": "SENSOR_PACKET_OBSERVED",
+        "source": payload["module_id"],
+        "family": "sensor",
+        "schema_version": "1.0",
+        "timestamp": payload["timestamp"],
+        "payload": payload,
+    }
+
+
+def health_record():
+    payload = {
+        "event_id": "health-1",
+        "event_type": "DEGRADED",
+        "module_id": "gnss-main",
+        "node_id": "founder-up2",
+        "owning_handmaiden": "Navigator",
+        "timestamp": 101.0,
+        "severity": "WARNING",
+        "state_before": "ONLINE",
+        "state_after": "DEGRADED",
+        "confidence": 1.0,
+        "diagnostic_payload": {"reason": "satellites-low"},
+        "receipt_id": "receipt-health-1",
+        "recovery_action": "continue observation",
+        "fallback_owner": "Velvet",
+    }
+    return {
+        "event_id": payload["event_id"],
+        "event_type": "HEALTH_DEGRADED",
+        "source": payload["module_id"],
+        "family": "health",
+        "schema_version": "1.0",
+        "timestamp": payload["timestamp"],
+        "payload": payload,
+    }
 
 
 class DiagnosticsSceneTests(unittest.TestCase):
