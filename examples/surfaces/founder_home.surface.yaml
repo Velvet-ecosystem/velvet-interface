@@ -1,0 +1,63 @@
+schema: velvet.interface.surface.v1
+name: founder_home
+base_resolution: [1920, 1080]
+background:
+  image: ../assets/founder_home.png
+  fit: cover
+  alt_text: Velvet home surface
+
+# Press points are normalized to the artwork, not the physical monitor.
+# Replace these example polygons after opening the real image in
+# examples/surface_layout_editor.py.
+press_points:
+  - id: drive_space
+    coordinate_space: normalized
+    polygon:
+      - [0.055, 0.690]
+      - [0.235, 0.690]
+      - [0.245, 0.910]
+      - [0.045, 0.910]
+    action: navigate:drive
+    label: Drive
+    accessibility_label: Open the Drive space
+    z_index: 10
+    enabled: true
+
+  - id: diagnostics_space
+    coordinate_space: normalized
+    polygon:
+      - [0.755, 0.690]
+      - [0.945, 0.690]
+      - [0.955, 0.910]
+      - [0.745, 0.910]
+    action: navigate:diagnostics
+    label: Diagnostics
+    accessibility_label: Open diagnostics
+    z_index: 10
+    enabled: true
+
+widgets:
+  - widget_id: founder_body_status
+    coordinate_space: normalized
+    rect: [0.715, 0.055, 0.245, 0.185]
+    z_index: 20
+    visible_in: [owner, service]
+    metadata:
+      purpose: Live body health and receipt summary
+
+  - widget_id: velvet_presence
+    coordinate_space: normalized
+    rect: [0.430, 0.070, 0.140, 0.140]
+    z_index: 30
+    visible_in: [owner, guest, silent]
+    metadata:
+      purpose: Ambient presence orb or avatar layer
+
+transitions:
+  enter: fade
+  exit: fade
+
+metadata:
+  surface: Founder UP2
+  posture: presentation-only
+  physical_control: disabled
