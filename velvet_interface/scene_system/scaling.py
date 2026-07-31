@@ -1,151 +1,143 @@
-# velvet_interface/scene_system/scaling.py
-"""
-Scene scaling utilities.
+# SPDX-License-Identifier: GPL-3.0-only
+"""Resolution transforms for image-first Velvet surfaces."""
 
-Automatic scaling of scenes, images, and polygons across different screen sizes.
-"""
+from __future__ import annotations
 
-from typing import Tuple
 import logging
+from typing import Tuple
 
 logger = logging.getLogger(__name__)
 
 
 class SceneScaler:
+    """Transform base-scene coordinates into a concrete display surface.
+
+    ``stretch`` fills the target independently on each axis. ``contain`` keeps
+    the whole background visible with letterboxing. ``cover`` fills the target
+    while allowing symmetric cropping. The same transform is used for the image,
+    press points, widget anchors, and reverse hit testing.
     """
-    Handle automatic scaling of scene elements.
-    
-    Scales from a base resolution to a target resolution while
-    maintaining aspect ratio or stretching as needed.
-    """
-    
+
     DEFAULT_BASE_RESOLUTION = (1280, 720)
-    
+    FIT_MODES = {"stretch", "contain", "cover"}
+
     def __init__(
         self,
         base_resolution: Tuple[int, int] = DEFAULT_BASE_RESOLUTION,
         target_resolution: Tuple[int, int] = DEFAULT_BASE_RESOLUTION,
-        maintain_aspect_ratio: bool = False
-    ):
-        """
-        Initialize scene scaler.
-        
-        Args:
-            base_resolution: Base scene resolution (width, height)
-            target_resolution: Target display resolution
-            maintain_aspect_ratio: If True, use letterboxing/pillarboxing
-        """
-        self.base_width, self.base_height = base_resolution
-        self.target_width, self.target_height = target_resolution
-        self.maintain_aspect_ratio = maintain_aspect_ratio
-        
+        maintain_aspect_ratio: bool = False,
+        fit_mode: str = "",
+    ) -> None:
+        self.base_width, self.base_height = _validate_resolution(
+            "base_resolution", base_resolution
+        )
+        self.target_width, self.target_height = _validate_resolution(
+            "target_resolution", target_resolution
+        )
+
+        if fit_mode:
+            selected_fit = str(fit_mode).strip().lower()
+        else:
+            selected_fit = "contain" if maintain_aspect_ratio else "stretch"
+        if selected_fit not in self.FIT_MODES:
+            raise ValueError("fit_mode must be stretch, contain, or cover")
+
+        self.fit_mode = selected_fit
+        self.maintain_aspect_ratio = selected_fit != "stretch"
         self._calculate_scale_factors()
-    
+
     def _calculate_scale_factors(self) -> None:
-        """Calculate X and Y scale factors."""
-        if self.maintain_aspect_ratio:
-            # Use uniform scaling (smaller of the two factors)
-            scale = min(
-                self.target_width / self.base_width,
-                self.target_height / self.base_height
-            )
+        width_scale = self.target_width / self.base_width
+        height_scale = self.target_height / self.base_height
+
+        if self.fit_mode == "stretch":
+            self.scale_x = width_scale
+            self.scale_y = height_scale
+        else:
+            scale = min(width_scale, height_scale)
+            if self.fit_mode == "cover":
+                scale = max(width_scale, height_scale)
             self.scale_x = scale
             self.scale_y = scale
-            
-            # Calculate letterbox/pillarbox offsets
-            scaled_width = self.base_width * scale
-            scaled_height = self.base_height * scale
-            
-            self.offset_x = (self.target_width - scaled_width) / 2
-            self.offset_y = (self.target_height - scaled_height) / 2
-        else:
-            # Independent X/Y scaling (stretch to fit)
-            self.scale_x = self.target_width / self.base_width
-            self.scale_y = self.target_height / self.base_height
-            self.offset_x = 0
-            self.offset_y = 0
-        
+
+        scaled_width = self.base_width * self.scale_x
+        scaled_height = self.base_height * self.scale_y
+        self.offset_x = (self.target_width - scaled_width) / 2.0
+        self.offset_y = (self.target_height - scaled_height) / 2.0
+
         logger.debug(
-            f"Scale factors: x={self.scale_x:.2f}, y={self.scale_y:.2f}, "
-            f"offset=({self.offset_x}, {self.offset_y})"
+            "Scene transform fit=%s scale=(%.4f, %.4f) offset=(%.2f, %.2f)",
+            self.fit_mode,
+            self.scale_x,
+            self.scale_y,
+            self.offset_x,
+            self.offset_y,
         )
-    
+
     def scale_point(self, x: float, y: float) -> Tuple[float, float]:
-        """
-        Scale a point from base to target resolution.
-        
-        Args:
-            x: X coordinate in base resolution
-            y: Y coordinate in base resolution
-            
-        Returns:
-            (x, y) in target resolution
-        """
         return (
-            x * self.scale_x + self.offset_x,
-            y * self.scale_y + self.offset_y
+            float(x) * self.scale_x + self.offset_x,
+            float(y) * self.scale_y + self.offset_y,
         )
-    
+
     def unscale_point(self, x: float, y: float) -> Tuple[float, float]:
-        """
-        Convert a point from target back to base resolution.
-        
-        Useful for hit testing: convert click coordinates back to base space.
-        
-        Args:
-            x: X coordinate in target resolution
-            y: Y coordinate in target resolution
-            
-        Returns:
-            (x, y) in base resolution
-        """
         return (
-            (x - self.offset_x) / self.scale_x,
-            (y - self.offset_y) / self.scale_y
+            (float(x) - self.offset_x) / self.scale_x,
+            (float(y) - self.offset_y) / self.scale_y,
         )
-    
+
     def scale_size(self, width: float, height: float) -> Tuple[float, float]:
-        """
-        Scale a size (width, height) from base to target resolution.
-        
-        Args:
-            width: Width in base resolution
-            height: Height in base resolution
-            
-        Returns:
-            (width, height) in target resolution
-        """
+        return (float(width) * self.scale_x, float(height) * self.scale_y)
+
+    def scale_rect(
+        self, x: float, y: float, width: float, height: float
+    ) -> Tuple[int, int, int, int]:
+        left, top = self.scale_point(x, y)
+        scaled_width, scaled_height = self.scale_size(width, height)
         return (
-            width * self.scale_x,
-            height * self.scale_y
+            int(round(left)),
+            int(round(top)),
+            max(1, int(round(scaled_width))),
+            max(1, int(round(scaled_height))),
         )
-    
+
     def get_scaled_dimensions(self) -> Tuple[int, int]:
-        """
-        Get the scaled scene dimensions.
-        
-        Returns:
-            (width, height) of scaled scene
-        """
-        if self.maintain_aspect_ratio:
-            return (
-                int(self.base_width * self.scale_x),
-                int(self.base_height * self.scale_y)
-            )
-        else:
-            return (self.target_width, self.target_height)
-    
+        return (
+            max(1, int(round(self.base_width * self.scale_x))),
+            max(1, int(round(self.base_height * self.scale_y))),
+        )
+
     def get_letterbox_rect(self) -> Tuple[int, int, int, int]:
-        """
-        Get the rectangle for the scaled scene within the target.
-        
-        Returns:
-            (x, y, width, height) of the scene area
-        """
         width, height = self.get_scaled_dimensions()
         return (
-            int(self.offset_x),
-            int(self.offset_y),
+            int(round(self.offset_x)),
+            int(round(self.offset_y)),
             width,
-            height
+            height,
         )
+
+    def contains_target_point(self, x: float, y: float) -> bool:
+        base_x, base_y = self.unscale_point(x, y)
+        return 0.0 <= base_x <= self.base_width and 0.0 <= base_y <= self.base_height
+
+    def normalized_target_point(self, x: float, y: float) -> Tuple[float, float]:
+        base_x, base_y = self.unscale_point(x, y)
+        return (base_x / self.base_width, base_y / self.base_height)
+
+
+def _validate_resolution(
+    label: str, resolution: Tuple[int, int]
+) -> Tuple[int, int]:
+    if not isinstance(resolution, (tuple, list)) or len(resolution) != 2:
+        raise ValueError("%s must be a width-height pair" % label)
+    width, height = resolution
+    if (
+        isinstance(width, bool)
+        or isinstance(height, bool)
+        or not isinstance(width, int)
+        or not isinstance(height, int)
+        or width < 1
+        or height < 1
+    ):
+        raise ValueError("%s values must be positive integers" % label)
+    return int(width), int(height)
