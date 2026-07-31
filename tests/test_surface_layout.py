@@ -54,10 +54,10 @@ class SurfaceScalingTests(unittest.TestCase):
         )
         scene.setup_scaling((500, 500))
 
-        # Base point (200, 150) becomes target point (100, 325) after contain.
-        self.assertEqual(scene.handle_click(100, 325), "navigate:drive")
+        # Base point (200, 150) becomes target point (100, 200) after contain.
+        self.assertEqual(scene.handle_click(100, 200), "navigate:drive")
         self.assertIsNone(scene.handle_click(100, 100))
-        self.assertEqual(scene.widget_rect(scene.widget_placements[0]), (350, 275, 100, 50))
+        self.assertEqual(scene.widget_rect(scene.widget_placements[0]), (350, 150, 100, 50))
 
     def test_disabled_press_point_is_not_actionable(self):
         scene = ImageScene(
