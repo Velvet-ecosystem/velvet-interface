@@ -124,6 +124,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         QtFounderBodyStatusWidget,
     )
     from velvet_interface.surfaces.pyqt.gnss_status_widget import QtGnssStatusWidget
+    from velvet_interface.surfaces.pyqt.nfc_status_widget import QtNfcStatusWidget
     from velvet_interface.surfaces.pyqt.qt_surface import QtSurface
     from velvet_interface.surfaces.pyqt.vehicle_power_status_widget import (
         QtVehiclePowerStatusWidget,
@@ -152,6 +153,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             return QtGnssStatusWidget(body_snapshot=args.body_snapshot)
         if widget_id == "vehicle_power_status":
             return QtVehiclePowerStatusWidget(body_snapshot=args.body_snapshot)
+        if widget_id == "nfc_status":
+            return QtNfcStatusWidget(body_snapshot=args.body_snapshot)
         return None
 
     def coordinate_sink(scene_id: str, point) -> None:
