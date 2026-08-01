@@ -96,6 +96,17 @@ class QtSurface(Surface):
     def hide_scene(self, scene: Scene) -> None:
         logger.debug("Hiding scene: %s", scene.scene_id)
 
+    def invalidate_scene(self, scene_id: str) -> None:
+        """Discard one cached widget so a promoted scene can render afresh."""
+
+        widget = self._scene_widgets.pop(scene_id, None)
+        if widget is None:
+            return
+        if self.container is not None:
+            self.container.removeWidget(widget)
+        widget.deleteLater()
+        logger.info("Invalidated rendered scene: %s", scene_id)
+
     def show_text(
         self,
         text: str,
