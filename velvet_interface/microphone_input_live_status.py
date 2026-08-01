@@ -15,6 +15,7 @@ from velvet_interface.core.body_state import BodyStateStore
 
 BODY_STATE_SNAPSHOT_SCHEMA = "velvet.runtime.body_state_snapshot.v1"
 _ALLOWED_CHANNEL_STATES = {"ACTIVE", "QUIET", "DIGITAL_SILENCE", "CLIPPING"}
+_ALLOWED_SENSOR_STATES = {"ONLINE", "DEGRADED", "FAILED", "RECOVERING"}
 
 
 @dataclass(frozen=True)
@@ -98,6 +99,8 @@ def load_microphone_input_live_status(
         payload = sensor.payload
         freshness = sensor.freshness(current)
         state = sensor.health_state.upper()
+        if state not in _ALLOWED_SENSOR_STATES:
+            raise ValueError("unsupported microphone sensor health state")
         if health is not None and health.state_after == "FAILED":
             state = "FAILED"
         elif freshness == "stale":
@@ -107,19 +110,36 @@ def load_microphone_input_live_status(
         device_alias = _required_text(payload, "device_alias")
         channel_count = _required_integer(payload, "channel_count", 1, 32)
         sample_rate_hz = _required_integer(payload, "sample_rate_hz", 8000, 384000)
+        if _required_text(payload, "sample_format") != "S16_LE":
+            raise ValueError("unsupported microphone sample format")
+        if payload.get("read_only") is not True:
+            raise ValueError("microphone evidence must be read-only")
+
         raw_channels = payload.get("channels")
         if not isinstance(raw_channels, list) or len(raw_channels) != channel_count:
             raise ValueError("microphone channels must match channel_count")
         channels = []
+        derived_counts = {
+            "ACTIVE": 0,
+            "QUIET": 0,
+            "DIGITAL_SILENCE": 0,
+            "CLIPPING": 0,
+        }
+        seen_labels = set()
         for raw_channel in raw_channels:
             if not isinstance(raw_channel, Mapping):
                 raise ValueError("microphone channel entry must be an object")
             channel_state = _required_text(raw_channel, "state").upper()
             if channel_state not in _ALLOWED_CHANNEL_STATES:
                 raise ValueError("unsupported microphone channel state")
+            label = _required_text(raw_channel, "label")
+            if label in seen_labels:
+                raise ValueError("microphone channel labels must be unique")
+            seen_labels.add(label)
+            derived_counts[channel_state] += 1
             channels.append(
                 MicrophoneChannelLiveStatus(
-                    label=_required_text(raw_channel, "label"),
+                    label=label,
                     state=channel_state,
                     peak_dbfs=_required_finite_number(raw_channel, "peak_dbfs"),
                     rms_dbfs=_required_finite_number(raw_channel, "rms_dbfs"),
@@ -132,8 +152,15 @@ def load_microphone_input_live_status(
             payload, "digital_silence_channels", 0, channel_count
         )
         clipping = _required_integer(payload, "clipping_channels", 0, channel_count)
-        if active + quiet + silence + clipping != channel_count:
-            raise ValueError("microphone channel-state counts do not balance")
+        declared_counts = {
+            "ACTIVE": active,
+            "QUIET": quiet,
+            "DIGITAL_SILENCE": silence,
+            "CLIPPING": clipping,
+        }
+        if declared_counts != derived_counts:
+            raise ValueError("microphone channel-state counts contradict channel entries")
+
         for key in (
             "audio_retained",
             "audio_persisted",
