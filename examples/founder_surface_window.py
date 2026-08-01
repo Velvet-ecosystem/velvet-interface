@@ -159,9 +159,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             active_surface_dir=surfaces_path,
         )
 
+        def maintenance_access_provider() -> bool:
+            return _env_true("VELVET_MAINTENANCE_UNLOCKED")
+
         def promotion_context_provider() -> SurfacePromotionContext:
             return SurfacePromotionContext(
-                maintenance_unlocked=_env_true("VELVET_MAINTENANCE_UNLOCKED"),
+                maintenance_unlocked=maintenance_access_provider(),
                 owner_present=_env_true("VELVET_OWNER_PRESENT"),
                 vehicle_stationary=_env_true("VELVET_VEHICLE_STATIONARY"),
                 physical_control_disabled=_env_true(
@@ -181,6 +184,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         studio_scene = SurfaceStudioScene(
             workspace=workspace,
+            maintenance_access_provider=maintenance_access_provider,
             promotion_context_provider=promotion_context_provider,
             on_promoted=reload_promoted_surface,
         )
