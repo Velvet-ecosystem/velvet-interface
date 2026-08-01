@@ -12,6 +12,11 @@ maintenance press point using ``navigate:surface_studio``. Draft editing is
 always isolated. Live promotion fails closed unless maintenance unlock, owner
 presence, stationary state, and physical-control-disabled evidence are supplied
 by the surrounding trusted launcher environment.
+
+A camera process may atomically publish one current PNG/JPEG still. Surface
+Studio captures it only when it is present, fresh, bounded, and structurally
+valid. Missing or stale frames remain unavailable rather than becoming fake
+artwork.
 """
 
 from __future__ import annotations
@@ -24,6 +29,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 from velvet_interface.core.router import Router
+from velvet_interface.scene_system.camera_capture import FileCameraFrameProvider
 from velvet_interface.scene_system.image_scene import ImageScene
 from velvet_interface.scene_system.surface_workspace import (
     SurfacePromotionContext,
@@ -54,6 +60,27 @@ def build_parser() -> argparse.ArgumentParser:
             )
         ),
         help="private draft workspace used by the on-device Surface Studio",
+    )
+    parser.add_argument(
+        "--camera-frame-path",
+        type=Path,
+        default=Path(
+            os.environ.get(
+                "VELVET_CAMERA_FRAME_PATH",
+                "/run/velvet/camera/latest-frame.jpg",
+            )
+        ),
+        help="atomically published current PNG/JPEG still for Surface Studio capture",
+    )
+    parser.add_argument(
+        "--camera-source-id",
+        default=os.environ.get("VELVET_CAMERA_SOURCE_ID", "camera.current_frame"),
+    )
+    parser.add_argument(
+        "--camera-frame-max-age",
+        type=float,
+        default=float(os.environ.get("VELVET_CAMERA_FRAME_MAX_AGE", "3.0")),
+        help="maximum age in seconds for a frame to count as current",
     )
     parser.add_argument(
         "--disable-surface-studio",
@@ -98,6 +125,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     if args.width < 320 or args.height < 240:
         print("Founder surface dimensions are too small", file=sys.stderr)
+        return 2
+    if args.camera_frame_max_age <= 0:
+        print("camera-frame-max-age must be positive", file=sys.stderr)
         return 2
 
     try:
@@ -158,6 +188,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             workspace_root=args.surface_workspace,
             active_surface_dir=surfaces_path,
         )
+        camera_frame_provider = FileCameraFrameProvider(
+            frame_path=args.camera_frame_path,
+            source_id=args.camera_source_id,
+            max_age_seconds=args.camera_frame_max_age,
+            max_bytes=workspace.max_asset_bytes,
+        )
 
         def maintenance_access_provider() -> bool:
             return _env_true("VELVET_MAINTENANCE_UNLOCKED")
@@ -186,6 +222,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             workspace=workspace,
             maintenance_access_provider=maintenance_access_provider,
             promotion_context_provider=promotion_context_provider,
+            camera_frame_provider=camera_frame_provider,
             on_promoted=reload_promoted_surface,
         )
         studio_scene.bind_router(router)

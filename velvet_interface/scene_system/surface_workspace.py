@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 from velvet_interface.scene_system.authoring import SurfaceLayoutAuthoringSession
+from velvet_interface.scene_system.camera_capture import CapturedCameraFrame
 from velvet_interface.scene_system.surface_manifest import SurfaceManifestLoader
 
 
@@ -107,6 +108,7 @@ class SurfaceWorkspace:
         self.assets_dir = self.root / "assets"
         self.backups_dir = self.root / "backups"
         self.receipts_path = self.root / "receipts" / "surface-promotions.jsonl"
+        self.camera_receipts_path = self.root / "receipts" / "camera-captures.jsonl"
         self.max_asset_bytes = max_asset_bytes
         self._ensure_directories()
 
@@ -126,8 +128,11 @@ class SurfaceWorkspace:
         """Copy one verified PNG/JPEG into the private draft asset directory."""
 
         name = _validated_name(surface_name)
-        source = Path(source_path).expanduser().resolve()
-        if source.is_symlink() or not source.is_file():
+        raw_source = Path(source_path).expanduser()
+        if raw_source.is_symlink():
+            raise SurfaceWorkspaceError("background source cannot be a symlink")
+        source = raw_source.resolve()
+        if not source.is_file():
             raise SurfaceWorkspaceError("background source must be a regular file")
         suffix = source.suffix.lower()
         if suffix not in _ALLOWED_EXTENSIONS:
@@ -142,6 +147,39 @@ class SurfaceWorkspace:
         if target.is_file():
             return target
         _copy_atomic(source, target, 0o600)
+        return target
+
+    def import_camera_frame(
+        self,
+        frame: CapturedCameraFrame,
+        surface_name: str,
+    ) -> Path:
+        """Store one trustworthy current camera still and append its receipt."""
+
+        if not isinstance(frame, CapturedCameraFrame):
+            raise TypeError("frame must be a CapturedCameraFrame")
+        name = _validated_name(surface_name)
+        if len(frame.image_bytes) > self.max_asset_bytes:
+            raise SurfaceWorkspaceError("captured camera frame exceeds the asset limit")
+
+        digest = hashlib.sha256(frame.image_bytes).hexdigest()[:16]
+        target = self.assets_dir / ("%s-camera-%s%s" % (name, digest, frame.suffix))
+        _write_atomic_bytes(target, frame.image_bytes, 0o600)
+        receipt = {
+            "schema": "velvet.interface.camera_capture_receipt.v1",
+            "receipt_id": frame.receipt_id.strip(),
+            "surface_name": name,
+            "source_id": frame.source_id.strip(),
+            "captured_at": float(frame.captured_at),
+            "stored_at": time.time(),
+            "asset_path": str(target),
+            "asset_sha256": hashlib.sha256(frame.image_bytes).hexdigest(),
+            "image_format": frame.image_format.lower(),
+            "authority": "none",
+            "actuation_granted": False,
+            "actuation_performed": False,
+        }
+        _append_jsonl(self.camera_receipts_path, receipt)
         return target
 
     def create_blank_background(
