@@ -14,7 +14,7 @@ class SurfaceStudioScene(Scene):
 
     This scene is registered by application code. It is never dynamically
     imported from a surface manifest, and its presence does not itself unlock
-    editing, promotion, or physical authority.
+    editing, promotion, camera access, or physical authority.
     """
 
     def __init__(
@@ -22,6 +22,7 @@ class SurfaceStudioScene(Scene):
         workspace: SurfaceWorkspace,
         maintenance_access_provider: Any,
         promotion_context_provider: Any,
+        camera_frame_provider: Any = None,
         on_promoted: Any = None,
         scene_id: str = "surface_studio",
     ) -> None:
@@ -29,6 +30,7 @@ class SurfaceStudioScene(Scene):
         self.workspace = workspace
         self.maintenance_access_provider = maintenance_access_provider
         self.promotion_context_provider = promotion_context_provider
+        self.camera_frame_provider = camera_frame_provider
         self.on_promoted = on_promoted
         self._router = None
         self._surface = None
@@ -76,6 +78,7 @@ class SurfaceStudioScene(Scene):
             workspace=self.workspace,
             target_size=(width, height),
             promotion_context_provider=self.promotion_context_provider,
+            camera_frame_provider=self.camera_frame_provider,
             on_promoted=self.on_promoted,
             on_back=self._go_back,
         )
