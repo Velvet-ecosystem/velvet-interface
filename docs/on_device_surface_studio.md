@@ -35,6 +35,7 @@ service shortcut. The shortcut does nothing while Maintenance is locked.
 Surface Studio can:
 
 - import a PNG or JPEG into its private managed asset directory;
+- capture the current real still published by a trusted camera feed;
 - create a blank PNG background at a chosen resolution and colour;
 - paint simple translucent panels and text directly into the draft artwork;
 - draw polygon press points over the artwork;
@@ -48,7 +49,53 @@ Surface Studio can:
   the full interface.
 
 It is intentionally not a general shell, Python editor, plugin loader, Runtime
-console, CAN tool, or actuator editor.
+console, CAN tool, actuator editor, or full photo editor.
+
+## Camera-frame capture
+
+Surface Studio does not open camera devices directly. A camera organ owns the
+stream and atomically publishes one current still. Founder defaults to:
+
+```text
+/run/velvet/camera/latest-frame.jpg
+```
+
+The path, source identity, and freshness window can be configured with:
+
+```bash
+export VELVET_CAMERA_FRAME_PATH=/run/velvet/camera/latest-frame.jpg
+export VELVET_CAMERA_SOURCE_ID=camera.front
+export VELVET_CAMERA_FRAME_MAX_AGE=3.0
+```
+
+The camera publisher should write a temporary file in the same directory and
+then replace the latest-frame path atomically. The Surface Studio capture button
+reads the file only at the moment Mister presses it.
+
+A capture is rejected when the current-frame file is:
+
+- missing;
+- a symbolic link;
+- older than the configured freshness window;
+- untrustworthily timestamped in the future;
+- larger than the Surface Studio asset limit;
+- not PNG or JPEG;
+- malformed or changed while it is being read;
+- undecodable by Qt.
+
+There is no placeholder or simulated fallback. A rejected capture leaves the
+existing draft untouched.
+
+A successful capture:
+
+1. receives a capture receipt ID;
+2. is copied into the private managed asset directory;
+3. appends `receipts/camera-captures.jsonl`;
+4. creates a new draft with camera-source provenance in its metadata;
+5. enters the normal press-point, widget, validation, and promotion path.
+
+Capturing a frame grants no camera control, Runtime authority, route, executor,
+or actuation.
 
 ## Draft and active separation
 
@@ -59,6 +106,7 @@ The default development workspace is:
   assets/
   drafts/
   backups/
+  receipts/camera-captures.jsonl
   receipts/surface-promotions.jsonl
 ```
 
@@ -105,6 +153,9 @@ executor, hardware target, CAN transmission, or physical actuation.
 python examples/founder_surface_window.py \
   --surfaces /var/lib/velvet-interface/surfaces \
   --surface-workspace /var/lib/velvet-interface/surface-studio \
+  --camera-frame-path /run/velvet/camera/latest-frame.jpg \
+  --camera-source-id camera.front \
+  --camera-frame-max-age 3.0 \
   --initial home \
   --width 1280 \
   --height 720 \
