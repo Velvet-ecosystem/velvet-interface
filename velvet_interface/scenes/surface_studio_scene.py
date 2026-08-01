@@ -14,18 +14,20 @@ class SurfaceStudioScene(Scene):
 
     This scene is registered by application code. It is never dynamically
     imported from a surface manifest, and its presence does not itself unlock
-    promotion or grant authority.
+    editing, promotion, or physical authority.
     """
 
     def __init__(
         self,
         workspace: SurfaceWorkspace,
+        maintenance_access_provider: Any,
         promotion_context_provider: Any,
         on_promoted: Any = None,
         scene_id: str = "surface_studio",
     ) -> None:
         super().__init__(scene_id)
         self.workspace = workspace
+        self.maintenance_access_provider = maintenance_access_provider
         self.promotion_context_provider = promotion_context_provider
         self.on_promoted = on_promoted
         self._router = None
@@ -37,6 +39,7 @@ class SurfaceStudioScene(Scene):
     def on_enter(self, context: Optional[Dict[str, Any]] = None) -> None:
         self._active = True
         if self._widget is not None:
+            self._widget.set_maintenance_access(self._maintenance_access())
             self._widget.refresh_drafts()
 
     def on_exit(self) -> None:
@@ -51,11 +54,18 @@ class SurfaceStudioScene(Scene):
         self._widget = QtSurfaceStudioWidget(
             workspace=self.workspace,
             target_size=(width, height),
+            maintenance_access=self._maintenance_access(),
             promotion_context_provider=self.promotion_context_provider,
             on_promoted=self.on_promoted,
             on_back=self._go_back,
         )
         return self._widget
+
+    def _maintenance_access(self) -> bool:
+        try:
+            return bool(self.maintenance_access_provider())
+        except Exception:
+            return False
 
     def _go_back(self) -> bool:
         if self._router is None:
