@@ -28,6 +28,10 @@ except ImportError:  # pragma: no cover - optional dependency guard
     QWidget = object  # type: ignore
 
 from velvet_interface.scene_system.authoring import SurfaceLayoutAuthoringSession
+from velvet_interface.scene_system.camera_capture import (
+    CameraFrameUnavailable,
+    CapturedCameraFrame,
+)
 from velvet_interface.scene_system.surface_workspace import (
     SurfacePromotionContext,
     SurfacePromotionResult,
@@ -37,6 +41,7 @@ from velvet_interface.scene_system.surface_workspace import (
 
 PromotionContextProvider = Callable[[], SurfacePromotionContext]
 PromotionCallback = Callable[[SurfacePromotionResult], None]
+CameraFrameProvider = Callable[[], CapturedCameraFrame]
 BackCallback = Callable[[], Any]
 
 
@@ -61,6 +66,7 @@ class QtSurfaceStudioWidget(QWidget):
         workspace: SurfaceWorkspace,
         target_size: Tuple[int, int],
         promotion_context_provider: PromotionContextProvider,
+        camera_frame_provider: Optional[CameraFrameProvider] = None,
         on_promoted: Optional[PromotionCallback] = None,
         on_back: Optional[BackCallback] = None,
     ) -> None:
@@ -70,6 +76,7 @@ class QtSurfaceStudioWidget(QWidget):
         self.workspace = workspace
         self.target_size = target_size
         self.promotion_context_provider = promotion_context_provider
+        self.camera_frame_provider = camera_frame_provider
         self.on_promoted = on_promoted
         self.on_back = on_back
         self.session = None  # type: Optional[SurfaceLayoutAuthoringSession]
@@ -90,6 +97,7 @@ class QtSurfaceStudioWidget(QWidget):
         self.draft_selector = QComboBox()
         self.open_button = QPushButton("Open Draft")
         self.import_button = QPushButton("New From Image")
+        self.capture_button = QPushButton("Capture Camera")
         self.blank_button = QPushButton("New Blank")
         self.save_button = QPushButton("Save Draft")
         self.promote_button = QPushButton("Promote Live")
@@ -99,6 +107,7 @@ class QtSurfaceStudioWidget(QWidget):
             self.draft_selector,
             self.open_button,
             self.import_button,
+            self.capture_button,
             self.blank_button,
             self.save_button,
             self.promote_button,
@@ -138,6 +147,7 @@ class QtSurfaceStudioWidget(QWidget):
 
         self.open_button.clicked.connect(self.open_selected_draft)
         self.import_button.clicked.connect(self.new_from_image)
+        self.capture_button.clicked.connect(self.capture_camera_frame)
         self.blank_button.clicked.connect(self.new_blank)
         self.save_button.clicked.connect(self.save_draft)
         self.promote_button.clicked.connect(self.promote_live)
@@ -146,6 +156,10 @@ class QtSurfaceStudioWidget(QWidget):
         self.remove_press_button.clicked.connect(self.remove_press)
         self.remove_widget_button.clicked.connect(self.remove_widget)
         self.toggle_overlay_button.clicked.connect(self.toggle_guides)
+
+        self.capture_button.setEnabled(self.camera_frame_provider is not None)
+        if self.camera_frame_provider is None:
+            self.capture_button.setToolTip("No trusted current-frame camera provider is configured")
 
         self.refresh_drafts()
         self._set_controls_enabled(False)
@@ -201,6 +215,51 @@ class QtSurfaceStudioWidget(QWidget):
             self._status("Imported artwork for %s" % name)
         except (OSError, TypeError, ValueError) as exc:
             QMessageBox.warning(self, "Artwork rejected", str(exc))
+
+    def capture_camera_frame(self) -> None:
+        """Capture the provider's current real frame as a new surface draft."""
+
+        if self.camera_frame_provider is None:
+            QMessageBox.information(
+                self,
+                "Camera unavailable",
+                "No trusted current-frame camera provider is configured.",
+            )
+            return
+        name = self._ask_surface_name()
+        if not name:
+            return
+        try:
+            frame = self.camera_frame_provider()
+            if not isinstance(frame, CapturedCameraFrame):
+                raise TypeError("camera provider returned an invalid frame contract")
+            pixmap = QPixmap()
+            if not pixmap.loadFromData(frame.image_bytes):
+                raise CameraFrameUnavailable("current camera frame cannot be decoded")
+            managed = self.workspace.import_camera_frame(frame, name)
+            session = self.workspace.create_session(
+                name,
+                managed,
+                (pixmap.width(), pixmap.height()),
+                fit_mode="cover",
+            )
+            session.metadata.update(
+                {
+                    "background_source": "camera_capture",
+                    "camera_source_id": frame.source_id,
+                    "camera_captured_at": float(frame.captured_at),
+                    "camera_capture_receipt_id": frame.receipt_id,
+                }
+            )
+            self._set_session(session)
+            self.save_draft()
+            self._status("Captured current frame from %s" % frame.source_id)
+        except CameraFrameUnavailable as exc:
+            QMessageBox.warning(self, "Camera frame unavailable", str(exc))
+            self._status("No trustworthy current camera frame")
+        except (OSError, TypeError, ValueError) as exc:
+            QMessageBox.warning(self, "Camera frame rejected", str(exc))
+            self._status("Camera frame rejected")
 
     def new_blank(self) -> None:
         name = self._ask_surface_name()
