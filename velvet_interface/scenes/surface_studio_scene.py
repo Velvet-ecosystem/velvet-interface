@@ -31,21 +31,42 @@ class SurfaceStudioScene(Scene):
         self.promotion_context_provider = promotion_context_provider
         self.on_promoted = on_promoted
         self._router = None
+        self._surface = None
         self._widget = None
+        self._rendered_access = None  # type: Optional[bool]
 
     def bind_router(self, router: Any) -> None:
         self._router = router
 
     def on_enter(self, context: Optional[Dict[str, Any]] = None) -> None:
         self._active = True
-        if self._widget is not None:
-            self._widget.set_maintenance_access(self._maintenance_access())
-            self._widget.refresh_drafts()
+        access = self._maintenance_access()
+        if (
+            self._widget is not None
+            and self._rendered_access is not None
+            and access != self._rendered_access
+            and self._surface is not None
+        ):
+            invalidate = getattr(self._surface, "invalidate_scene", None)
+            if callable(invalidate):
+                invalidate(self.scene_id)
+            self._widget = None
+        if access and self._widget is not None:
+            refresh = getattr(self._widget, "refresh_drafts", None)
+            if callable(refresh):
+                refresh()
 
     def on_exit(self) -> None:
         self._active = False
 
     def render(self, surface: Any) -> Any:
+        self._surface = surface
+        access = self._maintenance_access()
+        self._rendered_access = access
+        if not access:
+            self._widget = self._render_locked(surface)
+            return self._widget
+
         from velvet_interface.surfaces.pyqt.surface_studio_widget import (
             QtSurfaceStudioWidget,
         )
@@ -54,12 +75,42 @@ class SurfaceStudioScene(Scene):
         self._widget = QtSurfaceStudioWidget(
             workspace=self.workspace,
             target_size=(width, height),
-            maintenance_access=self._maintenance_access(),
             promotion_context_provider=self.promotion_context_provider,
             on_promoted=self.on_promoted,
             on_back=self._go_back,
         )
         return self._widget
+
+    def _render_locked(self, surface: Any) -> Any:
+        from PyQt5.QtCore import Qt
+        from PyQt5.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
+
+        width, height = surface.get_dimensions()
+        widget = QWidget()
+        widget.setFixedSize(width, height)
+        widget.setStyleSheet(
+            "QWidget { background: #07080c; color: #eee8df; }"
+            "QLabel#title { color: #d8b56a; font-size: 28px; }"
+            "QPushButton { min-width: 180px; min-height: 42px; }"
+        )
+        layout = QVBoxLayout(widget)
+        layout.addStretch(1)
+        title = QLabel("SURFACE STUDIO LOCKED")
+        title.setObjectName("title")
+        title.setAlignment(Qt.AlignCenter)
+        message = QLabel(
+            "Open this workshop through Velvet's protected Maintenance entrance.\n"
+            "No draft files or active surfaces were changed."
+        )
+        message.setAlignment(Qt.AlignCenter)
+        message.setWordWrap(True)
+        back = QPushButton("Back")
+        back.clicked.connect(self._go_back)
+        layout.addWidget(title)
+        layout.addWidget(message)
+        layout.addWidget(back, alignment=Qt.AlignCenter)
+        layout.addStretch(1)
+        return widget
 
     def _maintenance_access(self) -> bool:
         try:
