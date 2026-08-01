@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -38,6 +39,8 @@ def load_vehicle_power_live_status(
         store = BodyStateStore()
         store.apply_many(document["records"])
         current = time.monotonic() if now_monotonic is None else float(now_monotonic)
+        if not math.isfinite(current) or current < 0:
+            raise ValueError("current monotonic time must be finite and non-negative")
         body = store.snapshot(current)
         sensor = next(
             (
@@ -145,8 +148,8 @@ def _required_number(payload: Mapping[str, Any], key: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError("vehicle power %s must be numeric" % key)
     number = float(value)
-    if number < 0:
-        raise ValueError("vehicle power %s cannot be negative" % key)
+    if not math.isfinite(number) or number < 0:
+        raise ValueError("vehicle power %s must be finite and non-negative" % key)
     return number
 
 
@@ -156,7 +159,10 @@ def _optional_number(payload: Mapping[str, Any], key: str) -> Optional[float]:
         return None
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError("vehicle power %s must be numeric" % key)
-    return float(value)
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("vehicle power %s must be finite" % key)
+    return number
 
 
 def _message(state: str, band: str, ignition_on: bool, freshness: str) -> str:
