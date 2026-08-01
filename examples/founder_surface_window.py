@@ -141,6 +141,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     from velvet_interface.surfaces.pyqt.founder_body_widget import (
         QtFounderBodyStatusWidget,
     )
+    from velvet_interface.surfaces.pyqt.gnss_status_widget import QtGnssStatusWidget
     from velvet_interface.surfaces.pyqt.qt_surface import QtSurface
 
     surfaces_path = args.surfaces.expanduser().resolve()
@@ -162,6 +163,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                 boot_snapshot=args.boot_snapshot,
                 body_snapshot=args.body_snapshot,
             )
+        if widget_id == "gnss_status":
+            return QtGnssStatusWidget(body_snapshot=args.body_snapshot)
         # Unknown IDs remain absent. Surface YAML never dynamically imports code.
         return None
 
