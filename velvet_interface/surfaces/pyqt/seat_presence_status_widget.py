@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
-"""Compact read-only aggregate seat-evidence widget."""
+"""Compact read-only aggregate seat person-sense widget."""
 
 from __future__ import annotations
 
@@ -14,6 +14,9 @@ except ImportError:  # pragma: no cover
     PYQT_AVAILABLE = False
     QWidget = object  # type: ignore[misc,assignment]
 
+from velvet_interface.seat_person_sense_live_status import (
+    load_seat_person_sense_live_status,
+)
 from velvet_interface.seat_presence_live_status import (
     load_seat_presence_live_status,
 )
@@ -31,7 +34,7 @@ _SEAT_ORDER = {
 
 
 class QtSeatPresenceStatusWidget(QWidget):
-    """Display Runtime radar and pressure evidence without authority access."""
+    """Display Runtime seat witnesses without sensor or authority access."""
 
     def __init__(self, body_snapshot: Path, refresh_ms: int = 1000) -> None:
         if not PYQT_AVAILABLE:
@@ -51,7 +54,7 @@ class QtSeatPresenceStatusWidget(QWidget):
         root = QVBoxLayout(self)
         root.setContentsMargins(12, 10, 12, 10)
         root.setSpacing(4)
-        title = QLabel("SEAT EVIDENCE")
+        title = QLabel("PERSON SENSES")
         title.setFont(QFont("Sans Serif", 11, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
         root.addWidget(title)
@@ -59,12 +62,12 @@ class QtSeatPresenceStatusWidget(QWidget):
         self.state.setObjectName("state")
         self.state.setAlignment(Qt.AlignCenter)
         root.addWidget(self.state)
-        self.seats = QLabel("Awaiting seat evidence")
+        self.seats = QLabel("Awaiting seat person-sense evidence")
         self.seats.setObjectName("seats")
         self.seats.setTextFormat(Qt.PlainText)
         self.seats.setWordWrap(True)
         root.addWidget(self.seats)
-        self.message = QLabel("Occupancy is not inferred")
+        self.message = QLabel("Identity and medical state are not inferred")
         self.message.setObjectName("message")
         self.message.setTextFormat(Qt.PlainText)
         self.message.setWordWrap(True)
@@ -79,22 +82,32 @@ class QtSeatPresenceStatusWidget(QWidget):
     def refresh(self) -> None:
         radar_status = load_seat_presence_live_status(self.body_snapshot)
         pressure_status = load_seat_pressure_live_status(self.body_snapshot)
+        person_status = load_seat_person_sense_live_status(self.body_snapshot)
+
         radar_by_seat = {seat.seat_id: seat for seat in radar_status.seats}
         pressure_by_seat = {
             seat.seat_id: seat for seat in pressure_status.seats
         }
+        person_by_seat = {seat.seat_id: seat for seat in person_status.seats}
         seat_ids = sorted(
-            set(radar_by_seat) | set(pressure_by_seat),
+            set(radar_by_seat) | set(pressure_by_seat) | set(person_by_seat),
             key=lambda seat_id: (_SEAT_ORDER.get(seat_id, 99), seat_id),
         )
 
-        states = {radar_status.state, pressure_status.state}
-        if states == {"UNAVAILABLE"}:
+        aggregate_states = {
+            radar_status.state,
+            pressure_status.state,
+            person_status.state,
+        }
+        available_states = aggregate_states - {"UNAVAILABLE"}
+        if not available_states:
             aggregate = "UNAVAILABLE"
-        elif "FAILED" in states:
-            aggregate = "DEGRADED" if len(seat_ids) else "FAILED"
-        elif "DEGRADED" in states:
+        elif "FAILED" in available_states and len(available_states) == 1:
+            aggregate = "FAILED"
+        elif available_states & {"FAILED", "DEGRADED"}:
             aggregate = "DEGRADED"
+        elif "PARTIAL" in available_states or "UNAVAILABLE" in aggregate_states:
+            aggregate = "PARTIAL"
         else:
             aggregate = "ONLINE"
         self.state.setText(aggregate)
@@ -103,6 +116,7 @@ class QtSeatPresenceStatusWidget(QWidget):
         for seat_id in seat_ids:
             radar = radar_by_seat.get(seat_id)
             pressure = pressure_by_seat.get(seat_id)
+            person = person_by_seat.get(seat_id)
             radar_state = radar.state if radar is not None else "UNAVAILABLE"
             pressure_state = (
                 pressure.state if pressure is not None else "UNAVAILABLE"
@@ -113,7 +127,7 @@ class QtSeatPresenceStatusWidget(QWidget):
             distance = (
                 "-"
                 if radar is None or radar.detection_distance_cm is None
-                else "%d cm" % radar.detection_distance_cm
+                else "%dcm" % radar.detection_distance_cm
             )
             pads = (
                 "-"
@@ -140,15 +154,46 @@ class QtSeatPresenceStatusWidget(QWidget):
                     relationship,
                 )
             )
+            if person is not None:
+                heartbeat = (
+                    "no-signal"
+                    if person.heartbeat_bpm is None
+                    else "%.0fbpm c%.2f q%.2f"
+                    % (
+                        person.heartbeat_bpm,
+                        person.heartbeat_confidence,
+                        person.heartbeat_signal_quality,
+                    )
+                )
+                topology = (
+                    "full"
+                    if person.movement_topology_complete
+                    else "partial"
+                )
+                lines.append(
+                    "  MAP M%d/%d B%d/%d E%d/%d move %.2f %s | H %s %s"
+                    % (
+                        person.main_active,
+                        person.main_total,
+                        person.bolster_active,
+                        person.bolster_total,
+                        person.edge_active,
+                        person.edge_total,
+                        person.movement_intensity,
+                        topology,
+                        heartbeat,
+                        person.heartbeat_state,
+                    )
+                )
         self.seats.setText(
-            "\n".join(lines) if lines else "Awaiting seat evidence"
+            "\n".join(lines) if lines else "Awaiting seat person-sense evidence"
         )
         if seat_ids:
             self.message.setText(
-                "%d seat%s observed; radar and pressure remain evidence only"
+                "%d seat%s observed; raw witnesses remain separate and non-diagnostic"
                 % (len(seat_ids), "" if len(seat_ids) == 1 else "s")
             )
         else:
             self.message.setText(
-                "Radar and pressure evidence awaiting Runtime"
+                "Radar, pressure body-map, and heartbeat evidence awaiting Runtime"
             )
