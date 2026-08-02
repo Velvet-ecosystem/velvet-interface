@@ -102,11 +102,17 @@ def load_seat_person_sense_live_status(
         for seat_id in seat_ids:
             body_map = body_maps.get(seat_id)
             heartbeat = heartbeats.get(seat_id)
-            body_state = body_map["state"] if body_map else "UNAVAILABLE"
-            heartbeat_state = heartbeat["state"] if heartbeat else "UNAVAILABLE"
-            state = _combined_state(body_state, heartbeat_state)
             body_projection = body_map["projection"] if body_map else {}
             heartbeat_projection = heartbeat["projection"] if heartbeat else {}
+            body_state = body_map["state"] if body_map else "UNAVAILABLE"
+            if (
+                body_map is not None
+                and body_state == "ONLINE"
+                and not body_projection["movement_topology_complete"]
+            ):
+                body_state = "PARTIAL"
+            heartbeat_state = heartbeat["state"] if heartbeat else "UNAVAILABLE"
+            state = _combined_state(body_state, heartbeat_state)
             seats.append(
                 SeatPersonSenseLiveSeat(
                     seat_id=seat_id,
@@ -237,6 +243,11 @@ def _validate_body_map(payload: Mapping[str, Any]) -> Mapping[str, Any]:
     if counted_roles["MAIN_LOAD"] < 1:
         raise ValueError("body map must contain a main load pad")
 
+    topology_complete = _required_bool(payload, "movement_topology_complete")
+    expected_complete = all(counted_roles[role] > 0 for role in _ROLES)
+    if topology_complete != expected_complete:
+        raise ValueError("movement topology completeness contradicts mapped roles")
+
     movement_detected = _required_bool(payload, "movement_detected")
     baseline = _required_bool(payload, "baseline_established")
     changed_pad_ids = _text_list(payload, "changed_pad_ids", 32)
@@ -261,9 +272,7 @@ def _validate_body_map(payload: Mapping[str, Any]) -> Mapping[str, Any]:
         "edge_active": counted_active["EDGE_MOTION"],
         "movement_detected": movement_detected,
         "movement_intensity": movement_intensity,
-        "movement_topology_complete": _required_bool(
-            payload, "movement_topology_complete"
-        ),
+        "movement_topology_complete": topology_complete,
     }
 
 
@@ -316,7 +325,7 @@ def _combined_state(body_state: str, heartbeat_state: str) -> str:
         return "FAILED"
     if states & {"FAILED", "STALE", "DEGRADED"}:
         return "DEGRADED"
-    if "UNAVAILABLE" in states:
+    if "PARTIAL" in states or "UNAVAILABLE" in states:
         return "PARTIAL"
     return "ONLINE"
 
