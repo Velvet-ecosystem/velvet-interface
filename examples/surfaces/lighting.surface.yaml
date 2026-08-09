@@ -1,0 +1,35 @@
+schema: velvet.interface.surface.v1
+name: lighting
+base_resolution:
+- 1920
+- 1080
+background:
+  image: ../assets/lighting.png
+  fit: cover
+  alt_text: Velvet lighting controls
+press_points:
+- id: return_home
+  coordinate_space: normalized
+  polygon:
+  - - 0.02
+    - 0.02
+  - - 0.2
+    - 0.02
+  - - 0.2
+    - 0.18
+  - - 0.02
+    - 0.18
+  action: navigate:founder_home
+  label: Return Home
+  accessibility_label: Return to the Front Room
+  z_index: 10
+  enabled: true
+widgets: []
+transitions:
+  enter: fade
+  exit: fade
+metadata:
+  surface: Founder UP2
+  posture: presentation-only
+  physical_control: disabled
+  implementation_status: temporary lighting skin
