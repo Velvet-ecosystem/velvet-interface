@@ -1,0 +1,4 @@
+schema: velvet.interface.surface-set.v1
+name: founder_reference
+surface_directory: surfaces
+initial_scene: founder_home
