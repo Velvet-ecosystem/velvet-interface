@@ -14,6 +14,12 @@ from velvet_interface.scene_system.surface_manifest import (
     SurfaceManifestLoader,
     WidgetPlacement,
 )
+from velvet_interface.scene_system.surface_set import (
+    SURFACE_SET_SCHEMA,
+    SurfaceSetBinding,
+    SurfaceSetError,
+    SurfaceSetLoader,
+)
 from velvet_interface.scene_system.transitions import (
     Transition,
     TransitionManager,
@@ -30,6 +36,10 @@ __all__ = [
     "BackgroundAsset",
     "PressPoint",
     "WidgetPlacement",
+    "SurfaceSetLoader",
+    "SurfaceSetBinding",
+    "SurfaceSetError",
+    "SURFACE_SET_SCHEMA",
     "SurfaceLayoutAuthoringSession",
     "PolygonRegion",
     "RegionManager",

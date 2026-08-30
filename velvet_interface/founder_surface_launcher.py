@@ -7,12 +7,13 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from uuid import uuid4
 
 from velvet_interface.core.router import Router
 from velvet_interface.scene_system.camera_capture import FileCameraFrameProvider
 from velvet_interface.scene_system.image_scene import ImageScene
+from velvet_interface.scene_system.surface_set import SurfaceSetLoader
 from velvet_interface.scene_system.surface_workspace import (
     SurfacePromotionContext,
     SurfaceWorkspace,
@@ -23,13 +24,33 @@ from velvet_interface.scenes.surface_studio_scene import SurfaceStudioScene
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Launch Velvet Founder surfaces")
+    surface_set_env = os.environ.get("VELVET_SURFACE_SET_PATH", "").strip()
+    parser.add_argument(
+        "--surface-set",
+        type=Path,
+        default=Path(surface_set_env) if surface_set_env else None,
+        help=(
+            "runtime surface-set binding; may also be supplied with "
+            "VELVET_SURFACE_SET_PATH"
+        ),
+    )
     parser.add_argument(
         "--surfaces",
         type=Path,
-        default=Path("examples/surfaces"),
-        help="active directory containing .yaml or .yml surface manifests",
+        default=None,
+        help=(
+            "override active directory containing .yaml or .yml surface manifests; "
+            "defaults to the selected surface set or examples/surfaces"
+        ),
     )
-    parser.add_argument("--initial", default="founder_home")
+    parser.add_argument(
+        "--initial",
+        default=None,
+        help=(
+            "override initial scene; defaults to the selected surface set or "
+            "founder_home"
+        ),
+    )
     parser.add_argument("--width", type=int, default=1280)
     parser.add_argument("--height", type=int, default=720)
     parser.add_argument(
@@ -103,6 +124,32 @@ def _env_true(name: str) -> bool:
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _resolve_surface_selection(args: argparse.Namespace) -> Tuple[Path, str]:
+    """Resolve presentation content without coupling the launcher to a body type."""
+
+    bound_directory = None
+    bound_initial = None
+    if args.surface_set is not None:
+        binding = SurfaceSetLoader().load(
+            str(args.surface_set),
+            require_directory=True,
+        )
+        bound_directory = binding.surface_path
+        bound_initial = binding.initial_scene
+
+    surfaces_path = (
+        args.surfaces.expanduser().resolve()
+        if args.surfaces is not None
+        else (
+            bound_directory
+            if bound_directory is not None
+            else Path("examples/surfaces").expanduser().resolve()
+        )
+    )
+    initial = args.initial or bound_initial or "founder_home"
+    return surfaces_path, initial
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     if args.width < 320 or args.height < 240:
@@ -110,6 +157,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 2
     if args.camera_frame_max_age <= 0:
         print("camera-frame-max-age must be positive", file=sys.stderr)
+        return 2
+
+    try:
+        surfaces_path, requested_initial = _resolve_surface_selection(args)
+    except (FileNotFoundError, ValueError, ImportError) as exc:
+        print("Unable to resolve surface set: %s" % exc, file=sys.stderr)
         return 2
 
     try:
@@ -136,7 +189,6 @@ def main(argv: Optional[List[str]] = None) -> int:
         QtVehiclePowerStatusWidget,
     )
 
-    surfaces_path = args.surfaces.expanduser().resolve()
     surfaces_path.mkdir(parents=True, exist_ok=True)
     scene_loader = YAMLSceneLoader()
     scene_documents = scene_loader.load_multiple(
@@ -230,7 +282,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         studio_scene.bind_router(router)
         router.register_scene(studio_scene)
 
-    initial = args.initial
+    initial = requested_initial
     if initial not in router.list_scenes():
         non_studio = [name for name in sorted(router.list_scenes()) if name != "surface_studio"]
         initial = non_studio[0] if non_studio else "surface_studio"
