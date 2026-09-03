@@ -104,6 +104,22 @@ press_points:
   accessibility_label: Open vehicle status
   z_index: 10
   enabled: true
+- id: emergency
+  coordinate_space: normalized
+  polygon:
+  - - 0.874132
+    - 0.013889
+  - - 0.990451
+    - 0.012346
+  - - 0.986979
+    - 0.058642
+  - - 0.880208
+    - 0.058642
+  action: navigate:emergency
+  label: Emergency
+  accessibility_label: Open emergency controls
+  z_index: 10
+  enabled: true
 widgets:
 - widget_id: founder_body_status
   coordinate_space: normalized
