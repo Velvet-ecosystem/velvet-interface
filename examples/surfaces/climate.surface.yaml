@@ -40,6 +40,102 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
+- id: central_climate_unit
+  coordinate_space: normalized
+  polygon:
+  - - 0.453993
+    - 0.320988
+  - - 0.546007
+    - 0.316358
+  - - 0.545139
+    - 0.529321
+  - - 0.448785
+    - 0.543210
+  action: emit:climate.unit.selected
+  label: Central Climate Unit
+  accessibility_label: Select central climate unit
+  z_index: 10
+  enabled: true
+- id: gauges_valves_panel
+  coordinate_space: normalized
+  polygon:
+  - - 0.703993
+    - 0.265432
+  - - 0.873264
+    - 0.231481
+  - - 0.866319
+    - 0.652778
+  - - 0.698785
+    - 0.560185
+  action: emit:climate.controls.selected
+  label: Gauges and Valves
+  accessibility_label: Select climate gauges and valves panel
+  z_index: 10
+  enabled: true
+- id: system_overview
+  coordinate_space: normalized
+  polygon:
+  - - 0.029514
+    - 0.347222
+  - - 0.137153
+    - 0.353395
+  - - 0.132812
+    - 0.489198
+  - - 0.032986
+    - 0.510802
+  action: emit:climate.overview.selected
+  label: System Overview
+  accessibility_label: Select climate system overview
+  z_index: 10
+  enabled: true
+- id: ventilation_port
+  coordinate_space: normalized
+  polygon:
+  - - 0.051215
+    - 0.129630
+  - - 0.138021
+    - 0.165123
+  - - 0.139757
+    - 0.333333
+  - - 0.050347
+    - 0.320988
+  action: emit:climate.ventilation.selected
+  label: Ventilation Port
+  accessibility_label: Select ventilation port
+  z_index: 10
+  enabled: true
+- id: velvet_mat
+  coordinate_space: normalized
+  polygon:
+  - - 0.444444
+    - 0.654321
+  - - 0.548611
+    - 0.658951
+  - - 0.559028
+    - 0.726852
+  - - 0.432292
+    - 0.725309
+  action: emit:climate.mat.selected
+  label: Velvet Mat
+  accessibility_label: Select Velvet climate mat
+  z_index: 10
+  enabled: true
+- id: staircase
+  coordinate_space: normalized
+  polygon:
+  - - 0.307292
+    - 0.263889
+  - - 0.342882
+    - 0.260802
+  - - 0.269965
+    - 0.591049
+  - - 0.229167
+    - 0.575617
+  action: emit:climate.staircase.selected
+  label: Staircase
+  accessibility_label: Select climate staircase
+  z_index: 10
+  enabled: true
 widgets: []
 transitions:
   enter: fade
@@ -48,3 +144,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
+  implementation_status: bench-mapped climate skin
