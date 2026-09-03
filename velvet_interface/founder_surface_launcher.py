@@ -111,6 +111,22 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--conversation-socket",
+        type=Path,
+        default=Path(
+            os.environ.get(
+                "VELVET_CONVERSATION_SOCKET_PATH",
+                "/run/velvet/conversation.sock",
+            )
+        ),
+        help="local Runtime Unix socket used by the written conversation scene",
+    )
+    parser.add_argument(
+        "--disable-written-conversation",
+        action="store_true",
+        help="do not register the trusted built-in written conversation scene",
+    )
+    parser.add_argument(
         "--presentation-mode",
         choices=("owner", "guest", "service", "silent", "emergency"),
         default="owner",
@@ -195,7 +211,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         str(surfaces_path),
         require_background=True,
     )
-    if not scene_documents and args.disable_surface_studio:
+    if (
+        not scene_documents
+        and args.disable_surface_studio
+        and args.disable_written_conversation
+    ):
         print("No valid surface manifests found in %s" % surfaces_path, file=sys.stderr)
         return 2
 
@@ -235,6 +255,41 @@ def main(argv: Optional[List[str]] = None) -> int:
     router = Router(surface)
     for name in sorted(scene_documents):
         router.register_scene(ImageScene(scene_documents[name]))
+
+    conversation_scene = None
+    conversation_access_provider = None
+    if not args.disable_written_conversation:
+        try:
+            from services.conversation_unix_transport import UnixConversationClient
+            from velvet_interface.scenes.written_conversation_scene import (
+                WrittenConversationScene,
+            )
+
+            conversation_client = UnixConversationClient(
+                args.conversation_socket,
+                timeout_seconds=2.0,
+                retries=0,
+            )
+
+            def conversation_access_provider() -> bool:
+                return _env_true("VELVET_OWNER_PRESENT") or _env_true(
+                    "VELVET_MAINTENANCE_UNLOCKED"
+                )
+
+            def submit_written_turn(text: str):
+                return conversation_client.submit(text, modality="text")
+
+            conversation_scene = WrittenConversationScene(
+                submit_turn=submit_written_turn,
+                access_provider=conversation_access_provider,
+            )
+            conversation_scene.bind_router(router)
+            router.register_scene(conversation_scene)
+        except (ImportError, ValueError) as exc:
+            print(
+                "Written conversation surface unavailable: %s" % exc,
+                file=sys.stderr,
+            )
 
     studio_scene = None
     if not args.disable_surface_studio:
@@ -284,8 +339,16 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     initial = requested_initial
     if initial not in router.list_scenes():
-        non_studio = [name for name in sorted(router.list_scenes()) if name != "surface_studio"]
-        initial = non_studio[0] if non_studio else "surface_studio"
+        built_in_tools = {"surface_studio", "written_conversation"}
+        ordinary = [
+            name for name in sorted(router.list_scenes()) if name not in built_in_tools
+        ]
+        if ordinary:
+            initial = ordinary[0]
+        elif studio_scene is not None:
+            initial = "surface_studio"
+        else:
+            initial = "written_conversation"
     if not router.navigate(initial):
         print("Unable to open initial surface: %s" % initial, file=sys.stderr)
         return 2
@@ -302,6 +365,15 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         studio_shortcut.activated.connect(open_studio)
         window._velvet_surface_studio_shortcut = studio_shortcut  # type: ignore[attr-defined]
+
+    if conversation_scene is not None:
+        conversation_shortcut = QShortcut(QKeySequence("Ctrl+Alt+C"), window)
+
+        def open_written_conversation() -> None:
+            router.navigate("written_conversation")
+
+        conversation_shortcut.activated.connect(open_written_conversation)
+        window._velvet_written_conversation_shortcut = conversation_shortcut  # type: ignore[attr-defined]
 
     if args.fullscreen:
         window.showFullScreen()
