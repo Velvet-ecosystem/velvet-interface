@@ -40,6 +40,102 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
+- id: vehicle_body
+  coordinate_space: normalized
+  polygon:
+  - - 0.410590
+    - 0.162037
+  - - 0.579861
+    - 0.165123
+  - - 0.598958
+    - 0.641975
+  - - 0.406250
+    - 0.654321
+  action: emit:vehicle.body.selected
+  label: Vehicle Body
+  accessibility_label: Select whole vehicle body
+  z_index: 10
+  enabled: true
+- id: front_service_desk
+  coordinate_space: normalized
+  polygon:
+  - - 0.175347
+    - 0.746914
+  - - 0.815104
+    - 0.748457
+  - - 0.815972
+    - 0.927469
+  - - 0.158854
+    - 0.907407
+  action: emit:vehicle.service.selected
+  label: Front Service Desk
+  accessibility_label: Select vehicle service workspace
+  z_index: 10
+  enabled: true
+- id: diagnostic_laptop_stand
+  coordinate_space: normalized
+  polygon:
+  - - 0.702257
+    - 0.402778
+  - - 0.782118
+    - 0.475309
+  - - 0.752604
+    - 0.552469
+  - - 0.677083
+    - 0.495370
+  action: emit:vehicle.diagnostics.selected
+  label: Diagnostic Laptop Stand
+  accessibility_label: Select vehicle diagnostics workspace
+  z_index: 10
+  enabled: true
+- id: rear_left_parts_desk
+  coordinate_space: normalized
+  polygon:
+  - - 0.150174
+    - 0.103395
+  - - 0.151910
+    - 0.175926
+  - - 0.271701
+    - 0.126543
+  - - 0.245660
+    - 0.089506
+  action: emit:vehicle.parts.selected
+  label: Rear Left Parts Desk
+  accessibility_label: Select vehicle parts workspace
+  z_index: 10
+  enabled: true
+- id: engine_cart
+  coordinate_space: normalized
+  polygon:
+  - - 0.237847
+    - 0.450617
+  - - 0.351562
+    - 0.455247
+  - - 0.329861
+    - 0.668210
+  - - 0.203125
+    - 0.665123
+  action: emit:vehicle.engine.selected
+  label: Engine Cart
+  accessibility_label: Select engine workspace
+  z_index: 10
+  enabled: true
+- id: right_electronics_desk
+  coordinate_space: normalized
+  polygon:
+  - - 0.808160
+    - 0.259259
+  - - 0.841146
+    - 0.209877
+  - - 0.959833
+    - 0.308519
+  - - 0.860056
+    - 0.308642
+  action: emit:vehicle.electronics.selected
+  label: Right Electronics Desk
+  accessibility_label: Select vehicle electronics workspace
+  z_index: 10
+  enabled: true
 widgets: []
 transitions:
   enter: fade
@@ -48,4 +144,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary vehicle skin
+  implementation_status: bench-mapped vehicle skin
