@@ -11,14 +11,14 @@ press_points:
 - id: return_home
   coordinate_space: normalized
   polygon:
-  - - 0.02
-    - 0.02
-  - - 0.2
-    - 0.02
-  - - 0.2
-    - 0.18
-  - - 0.02
-    - 0.18
+  - - 0.021701
+    - 0.029321
+  - - 0.107639
+    - 0.033951
+  - - 0.104167
+    - 0.064815
+  - - 0.019097
+    - 0.057099
   action: navigate:founder_home
   label: Return Home
   accessibility_label: Return to the Front Room
