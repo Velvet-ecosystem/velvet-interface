@@ -188,10 +188,10 @@ widgets:
 - widget_id: founder_body_status
   coordinate_space: normalized
   rect:
-  - 0.715
-  - 0.055
-  - 0.245
-  - 0.185
+  - 0.69
+  - 0.085
+  - 0.29
+  - 0.30
   z_index: 20
   visible_in:
   - owner
