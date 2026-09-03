@@ -11,14 +11,14 @@ press_points:
 - id: climate
   coordinate_space: normalized
   polygon:
-  - - 0.435156
-    - 0.526389
-  - - 0.555937
-    - 0.509722
-  - - 0.540625
-    - 0.704167
-  - - 0.446094
-    - 0.711111
+  - - 0.450521
+    - 0.470679
+  - - 0.53559
+    - 0.472222
+  - - 0.534722
+    - 0.609568
+  - - 0.449653
+    - 0.608025
   action: navigate:climate
   label: Hearth / Climate
   accessibility_label: Open climate controls
@@ -27,14 +27,14 @@ press_points:
 - id: audio
   coordinate_space: normalized
   polygon:
-  - - 0.576562
-    - 0.475
-  - - 0.629687
-    - 0.488889
-  - - 0.641406
-    - 0.563889
-  - - 0.582812
-    - 0.573611
+  - - 0.585069
+    - 0.376543
+  - - 0.636285
+    - 0.382716
+  - - 0.626736
+    - 0.462963
+  - - 0.579861
+    - 0.46142
   action: navigate:audio
   label: Gramophone / Audio
   accessibility_label: Open audio controls
@@ -43,14 +43,14 @@ press_points:
 - id: comfort
   coordinate_space: normalized
   polygon:
-  - - 0.122656
-    - 0.640278
-  - - 0.260937
-    - 0.640278
-  - - 0.292187
-    - 0.779167
-  - - 0.121094
-    - 0.8
+  - - 0.167535
+    - 0.600309
+  - - 0.250868
+    - 0.564815
+  - - 0.315104
+    - 0.58179
+  - - 0.179688
+    - 0.645062
   action: navigate:comfort
   label: Chaise / Comfort
   accessibility_label: Open comfort controls
@@ -59,14 +59,14 @@ press_points:
 - id: lighting
   coordinate_space: normalized
   polygon:
-  - - 0.091406
-    - 0.170833
-  - - 0.15625
-    - 0.173611
-  - - 0.160937
-    - 0.466667
-  - - 0.088281
-    - 0.466667
+  - - 0.111111
+    - 0.131173
+  - - 0.167535
+    - 0.138889
+  - - 0.163194
+    - 0.205247
+  - - 0.112847
+    - 0.20679
   action: navigate:lighting
   label: Window / Moon / Lighting
   accessibility_label: Open lighting controls
@@ -75,113 +75,49 @@ press_points:
 - id: archive
   coordinate_space: normalized
   polygon:
-  - - 0.264062
-    - 0.116667
-  - - 0.411719
-    - 0.120833
-  - - 0.398438
-    - 0.575
-  - - 0.253906
-    - 0.584722
+  - - 0.309028
+    - 0.146605
+  - - 0.350694
+    - 0.151235
+  - - 0.331597
+    - 0.408951
+  - - 0.289062
+    - 0.401235
   action: navigate:archive
   label: Bookshelf / Ladder / Archive
   accessibility_label: Open Velvet archive
   z_index: 10
   enabled: true
-- id: private
-  coordinate_space: normalized
-  polygon:
-  - - 0.814063
-    - 0.493056
-  - - 0.902344
-    - 0.495833
-  - - 0.901563
-    - 0.718056
-  - - 0.826562
-    - 0.683333
-  action: navigate:private
-  label: Bed / Private
-  accessibility_label: Open private space
-  z_index: 10
-  enabled: false
-- id: listen
-  coordinate_space: normalized
-  polygon:
-  - - 0.471875
-    - 0.808333
-  - - 0.528906
-    - 0.811111
-  - - 0.525781
-    - 0.902778
-  - - 0.473438
-    - 0.902778
-  action: navigate:listen
-  label: Microphone / Listen
-  accessibility_label: Open listening and conversation
-  z_index: 10
-  enabled: false
-- id: backroom
-  coordinate_space: normalized
-  polygon:
-  - - 0.957812
-    - 0.455556
-  - - 0.99375
-    - 0.452778
-  - - 0.994531
-    - 0.5375
-  - - 0.957031
-    - 0.543056
-  action: navigate:backroom
-  label: Backroom Lock
-  accessibility_label: Open backroom
-  z_index: 10
-  enabled: false
-- id: emergency
-  coordinate_space: normalized
-  polygon:
-  - - 0.894545
-    - 0.928283
-  - - 0.99
-    - 0.923434
-  - - 0.989091
-    - 0.967071
-  - - 0.896364
-    - 0.967071
-  action: navigate:emergency
-  label: Emergency
-  accessibility_label: Open emergency controls
-  z_index: 10
-  enabled: false
-- id: silent
-  coordinate_space: normalized
-  polygon:
-  - - 0.775455
-    - 0.028081
-  - - 0.814545
-    - 0.026465
-  - - 0.813636
-    - 0.057172
-  - - 0.785455
-    - 0.052323
-  action: navigate:silent
-  label: Silent / Mute
-  accessibility_label: Open silent mode
-  z_index: 10
-  enabled: false
 - id: vehicle
   coordinate_space: normalized
   polygon:
-  - - 0.446364
-    - 0.289899
-  - - 0.540909
-    - 0.293131
-  - - 0.539091
-    - 0.440202
-  - - 0.446364
-    - 0.443434
+  - - 0.446181
+    - 0.203704
+  - - 0.538194
+    - 0.203704
+  - - 0.541667
+    - 0.342593
+  - - 0.450521
+    - 0.351852
   action: navigate:vehicle
   label: Painting / Vehicle Status
   accessibility_label: Open vehicle status
+  z_index: 10
+  enabled: true
+- id: emergency
+  coordinate_space: normalized
+  polygon:
+  - - 0.874132
+    - 0.013889
+  - - 0.990451
+    - 0.012346
+  - - 0.986979
+    - 0.058642
+  - - 0.880208
+    - 0.058642
+  action: navigate:emergency
+  label: Emergency
+  accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
 widgets:
