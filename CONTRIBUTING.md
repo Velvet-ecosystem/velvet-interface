@@ -27,10 +27,11 @@ This project adheres to a Code of Conduct. By participating, you agree to uphold
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
 3. Make changes and add tests
-4. Run tests: `pytest tests/`
-5. Commit with clear messages
-6. Push to your fork
-7. Open a Pull Request against `main`
+4. Inspect `.github/workflows/interface-ci.yml` and run the same baseline command: `python -m unittest discover -s tests -v`
+5. Spot-check new or edited tests for accidental test-framework imports that CI does not install
+6. Commit with clear messages
+7. Push to your fork
+8. Open a Pull Request against `main`
 
 ## Development Setup
 
@@ -51,9 +52,13 @@ pip install -e .[dev,qt]
 
 ### Running Tests
 
+The repository CI baseline is Python `unittest`, not pytest:
+
 ```bash
-pytest tests/
+python -m unittest discover -s tests -v
 ```
+
+Before opening or merging a PR that changes tests, inspect `.github/workflows/interface-ci.yml` and confirm every new test works with the dependencies CI actually installs. In particular, do not add `pytest` imports to baseline tests unless the test-runner contract, CI dependencies, and contributor documentation are intentionally changed together.
 
 ### Type Checking
 
@@ -164,7 +169,8 @@ Fixes #67
 
 ### Testing Surfaces
 
-- Use pytest for unit tests
+- Use the repository's `unittest` baseline for tests under `tests/`
+- Run `python -m unittest discover -s tests -v`
 - Test all Surface API methods
 - Verify scene rendering
 - Check error handling
