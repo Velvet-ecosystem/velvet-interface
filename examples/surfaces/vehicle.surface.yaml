@@ -132,8 +132,8 @@ press_points:
   - - 0.860056
     - 0.308642
   action: emit:vehicle.electronics.selected
-  label: Right Electronics Desk
-  accessibility_label: Select vehicle electronics workspace
+  label: Nodes / Body Systems
+  accessibility_label: Open read-only Velvet nodes and body systems
   z_index: 10
   enabled: true
 widgets: []
