@@ -32,5 +32,34 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e .
 
+      - name: Spot-check baseline test framework
+        run: |
+          python - <<'PY'
+          import ast
+          import pathlib
+          import sys
+
+          offenders = []
+          for path in pathlib.Path("tests").rglob("*.py"):
+              tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+              for node in ast.walk(tree):
+                  if isinstance(node, ast.Import):
+                      if any(alias.name == "pytest" or alias.name.startswith("pytest.") for alias in node.names):
+                          offenders.append(str(path))
+                          break
+                  if isinstance(node, ast.ImportFrom):
+                      module = node.module or ""
+                      if module == "pytest" or module.startswith("pytest."):
+                          offenders.append(str(path))
+                          break
+
+          if offenders:
+              print("Interface baseline uses unittest; pytest imports found in baseline tests:")
+              for offender in sorted(set(offenders)):
+                  print(" - %s" % offender)
+              print("Either convert the tests to unittest or intentionally update CI/dependencies/docs together.")
+              sys.exit(1)
+          PY
+
       - name: Run baseline tests
         run: python -m unittest discover -s tests -v
