@@ -58,6 +58,10 @@ The repository CI baseline is Python `unittest`, not pytest:
 python -m unittest discover -s tests -v
 ```
 
+The Python 3.8 compatibility function in `tests/test_python38_compat.py` is
+registered through unittest's `load_tests` hook, so this command executes it
+alongside the `TestCase` tests without additional test dependencies.
+
 Before opening or merging a PR that changes tests, inspect `.github/workflows/interface-ci.yml` and confirm every new test works with the dependencies CI actually installs. In particular, do not add `pytest` imports to baseline tests unless the test-runner contract, CI dependencies, and contributor documentation are intentionally changed together.
 
 ### Type Checking
