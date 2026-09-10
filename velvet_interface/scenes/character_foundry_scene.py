@@ -8,29 +8,27 @@ semantics remain in Persona Continuity through ``FoundryBridge``.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from velvet_interface.core.scene import Scene
-from velvet_interface.foundry_bridge import FoundryBridge, FoundryUnavailable
+from velvet_interface.foundry_bridge import FoundryBridge
 
 
 class CharacterFoundryScene(Scene):
-    """Protected full-screen entrance for the Character Foundry.
-
-    The initial scene intentionally provides only a readiness shell. The final
-    structured editor is a separate Interface change so placement and visual
-    design can be reviewed without changing the backend boundary again.
-    """
+    """Protected full-screen Character Foundry workspace scene."""
 
     def __init__(
         self,
         bridge: FoundryBridge,
         access_provider: Any,
+        background_path: Path,
         scene_id: str = "character_foundry",
     ) -> None:
         super().__init__(scene_id)
         self.bridge = bridge
         self.access_provider = access_provider
+        self.background_path = Path(background_path)
         self._router = None
         self._surface = None
         self._widget = None
@@ -52,6 +50,10 @@ class CharacterFoundryScene(Scene):
             if callable(invalidate):
                 invalidate(self.scene_id)
             self._widget = None
+        if access and self._widget is not None:
+            refresh = getattr(self._widget, "refresh_candidates", None)
+            if callable(refresh):
+                refresh()
 
     def on_exit(self) -> None:
         self._active = False
@@ -61,28 +63,19 @@ class CharacterFoundryScene(Scene):
         access = self._has_access()
         self._rendered_access = access
         if not access:
-            self._widget = self._render_message(
-                surface,
-                "CHARACTER FOUNDRY LOCKED",
-                "Open this workshop with verified owner presence or protected maintenance access.",
-            )
+            self._widget = self._render_locked(surface)
             return self._widget
 
-        try:
-            draft_count = len(self.bridge.list_candidates())
-        except (FoundryUnavailable, FileNotFoundError, TypeError, ValueError, OSError) as exc:
-            self._widget = self._render_message(
-                surface,
-                "CHARACTER FOUNDRY UNAVAILABLE",
-                str(exc),
-            )
-            return self._widget
+        from velvet_interface.surfaces.pyqt.character_foundry_widget import (
+            QtCharacterFoundryWidget,
+        )
 
-        self._widget = self._render_message(
-            surface,
-            "CHARACTER FOUNDRY READY",
-            "%d local draft%s available. The structured workshop surface is ready for UI design."
-            % (draft_count, "" if draft_count == 1 else "s"),
+        width, height = surface.get_dimensions()
+        self._widget = QtCharacterFoundryWidget(
+            bridge=self.bridge,
+            target_size=(width, height),
+            background_path=self.background_path,
+            on_back=self._go_back,
         )
         return self._widget
 
@@ -92,27 +85,28 @@ class CharacterFoundryScene(Scene):
         except Exception:
             return False
 
-    def _render_message(self, surface: Any, title_text: str, message_text: str) -> Any:
+    def _render_locked(self, surface: Any) -> Any:
         from PyQt5.QtCore import Qt
         from PyQt5.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
         width, height = surface.get_dimensions()
         widget = QWidget()
         widget.setFixedSize(width, height)
-        widget.setObjectName("characterFoundryShell")
+        widget.setObjectName("characterFoundryLocked")
         widget.setStyleSheet(
-            "QWidget#characterFoundryShell { background: #08090d; color: #eee8df; }"
+            "QWidget#characterFoundryLocked { background: #08090d; color: #eee8df; }"
             "QLabel#foundryTitle { color: #d8b56a; font-size: 30px; }"
-            "QLabel#foundryMessage { font-size: 16px; }"
             "QPushButton { min-width: 180px; min-height: 42px; }"
         )
         layout = QVBoxLayout(widget)
         layout.addStretch(1)
-        title = QLabel(title_text)
+        title = QLabel("CHARACTER FOUNDRY LOCKED")
         title.setObjectName("foundryTitle")
         title.setAlignment(Qt.AlignCenter)
-        message = QLabel(message_text)
-        message.setObjectName("foundryMessage")
+        message = QLabel(
+            "Open this workshop with verified owner presence or protected maintenance access.\n"
+            "No candidate drafts were changed."
+        )
         message.setAlignment(Qt.AlignCenter)
         message.setWordWrap(True)
         back = QPushButton("Back")
