@@ -52,6 +52,22 @@ class FoundryBridge:
             return [FoundryBridge._plain(item) for item in value]
         return value
 
+    @staticmethod
+    def _snapshot(value: Any) -> Dict[str, Any]:
+        """Return plain snapshot data plus the canonical optimistic content hash.
+
+        Persona Continuity intentionally nests the hash under ``summary``. Exposing
+        the same value at the presentation envelope top level avoids making every UI
+        surface understand dataclass nesting while preserving the canonical value.
+        """
+        plain = FoundryBridge._plain(value)
+        if not isinstance(plain, dict):
+            raise TypeError("Foundry snapshot must convert to a mapping")
+        summary = plain.get("summary")
+        if isinstance(summary, dict) and summary.get("content_hash"):
+            plain["content_hash"] = summary["content_hash"]
+        return plain
+
     def scaffold(
         self,
         candidate_id: str,
@@ -72,10 +88,10 @@ class FoundryBridge:
         return self._plain(self._service.validate(mapping))
 
     def create(self, mapping: Mapping[str, Any]) -> Dict[str, Any]:
-        return self._plain(self._service.create(mapping))
+        return self._snapshot(self._service.create(mapping))
 
     def inspect(self, candidate_id: str) -> Dict[str, Any]:
-        return self._plain(self._service.inspect(candidate_id))
+        return self._snapshot(self._service.inspect(candidate_id))
 
     def list_candidates(self) -> Tuple[Dict[str, Any], ...]:
         values = self._service.list_candidates()
@@ -86,7 +102,7 @@ class FoundryBridge:
         mapping: Mapping[str, Any],
         expected_content_hash: str,
     ) -> Dict[str, Any]:
-        return self._plain(self._service.update(mapping, expected_content_hash))
+        return self._snapshot(self._service.update(mapping, expected_content_hash))
 
     def discard(self, candidate_id: str, expected_content_hash: str) -> Dict[str, Any]:
         return self._plain(self._service.discard(candidate_id, expected_content_hash))
