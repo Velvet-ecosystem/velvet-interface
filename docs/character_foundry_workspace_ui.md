@@ -53,3 +53,7 @@ The Interface does not add buttons that directly:
 - actuate hardware.
 
 Those are external governed responsibilities, not Interface controls.
+
+## Launcher wiring
+
+This stacked UI change does not modify the live Founder launcher while the underlying Interface boundary PR remains unmerged. After the boundary lands on `main`, the UI branch should be retargeted, refreshed against resulting `main`, and launcher registration added as the final bounded step before the Character Foundry scene becomes reachable in normal operation.
