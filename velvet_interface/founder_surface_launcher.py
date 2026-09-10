@@ -91,6 +91,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="do not register the trusted built-in Surface Studio scene",
     )
     parser.add_argument(
+        "--foundry-state-dir",
+        type=Path,
+        default=Path(
+            os.environ.get(
+                "VELVET_FOUNDRY_STATE_DIR",
+                ".velvet-dev/persona-continuity",
+            )
+        ),
+        help="local Persona Continuity state directory used by Character Foundry",
+    )
+    parser.add_argument(
+        "--disable-character-foundry",
+        action="store_true",
+        help="do not register the trusted built-in Character Foundry scene",
+    )
+    parser.add_argument(
         "--boot-snapshot",
         type=Path,
         default=Path(
@@ -230,21 +246,13 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     from velvet_interface.body_nodes_live_status import load_body_nodes_status
     from velvet_interface.surfaces.pyqt.body_nodes_widget import QtBodyNodesTouchList
-    from velvet_interface.surfaces.pyqt.founder_body_widget import (
-        QtFounderBodyStatusWidget,
-    )
+    from velvet_interface.surfaces.pyqt.founder_body_widget import QtFounderBodyStatusWidget
     from velvet_interface.surfaces.pyqt.gnss_status_widget import QtGnssStatusWidget
-    from velvet_interface.surfaces.pyqt.microphone_input_status_widget import (
-        QtMicrophoneInputStatusWidget,
-    )
+    from velvet_interface.surfaces.pyqt.microphone_input_status_widget import QtMicrophoneInputStatusWidget
     from velvet_interface.surfaces.pyqt.nfc_status_widget import QtNfcStatusWidget
     from velvet_interface.surfaces.pyqt.qt_surface import QtSurface
-    from velvet_interface.surfaces.pyqt.seat_presence_status_widget import (
-        QtSeatPresenceStatusWidget,
-    )
-    from velvet_interface.surfaces.pyqt.vehicle_power_status_widget import (
-        QtVehiclePowerStatusWidget,
-    )
+    from velvet_interface.surfaces.pyqt.seat_presence_status_widget import QtSeatPresenceStatusWidget
+    from velvet_interface.surfaces.pyqt.vehicle_power_status_widget import QtVehiclePowerStatusWidget
 
     surfaces_path.mkdir(parents=True, exist_ok=True)
     scene_loader = YAMLSceneLoader()
@@ -256,6 +264,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         not scene_documents
         and args.disable_surface_studio
         and args.disable_written_conversation
+        and args.disable_character_foundry
     ):
         print("No valid surface manifests found in %s" % surfaces_path, file=sys.stderr)
         return 2
@@ -345,13 +354,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         router.register_scene(scene)
 
     conversation_scene = None
-    conversation_access_provider = None
     if not args.disable_written_conversation:
         try:
             from services.conversation_unix_transport import UnixConversationClient
-            from velvet_interface.scenes.written_conversation_scene import (
-                WrittenConversationScene,
-            )
+            from velvet_interface.scenes.written_conversation_scene import WrittenConversationScene
 
             conversation_client = UnixConversationClient(
                 args.conversation_socket,
@@ -376,6 +382,30 @@ def main(argv: Optional[List[str]] = None) -> int:
         except (ImportError, ValueError) as exc:
             print(
                 "Written conversation surface unavailable: %s" % exc,
+                file=sys.stderr,
+            )
+
+    foundry_scene = None
+    if not args.disable_character_foundry:
+        try:
+            from velvet_interface.foundry_bridge import FoundryBridge, FoundryUnavailable
+            from velvet_interface.scenes.character_foundry_scene import CharacterFoundryScene
+
+            def foundry_access_provider() -> bool:
+                return _env_true("VELVET_OWNER_PRESENT") or _env_true(
+                    "VELVET_MAINTENANCE_UNLOCKED"
+                )
+
+            foundry_scene = CharacterFoundryScene(
+                bridge=FoundryBridge(args.foundry_state_dir),
+                access_provider=foundry_access_provider,
+            )
+            foundry_scene.bind_router(router)
+            router.register_scene(foundry_scene)
+        except (FoundryUnavailable, ImportError, ValueError, OSError) as exc:
+            foundry_scene = None
+            print(
+                "Character Foundry surface unavailable: %s" % exc,
                 file=sys.stderr,
             )
 
@@ -433,7 +463,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     initial = requested_initial
     if initial not in router.list_scenes():
-        built_in_tools = {"surface_studio", "written_conversation"}
+        built_in_tools = {"surface_studio", "written_conversation", "character_foundry"}
         ordinary = [
             name for name in sorted(router.list_scenes()) if name not in built_in_tools
         ]
@@ -441,8 +471,13 @@ def main(argv: Optional[List[str]] = None) -> int:
             initial = ordinary[0]
         elif studio_scene is not None:
             initial = "surface_studio"
-        else:
+        elif conversation_scene is not None:
             initial = "written_conversation"
+        elif foundry_scene is not None:
+            initial = "character_foundry"
+        else:
+            print("No available Founder scenes", file=sys.stderr)
+            return 2
     if not router.navigate(initial):
         print("Unable to open initial surface: %s" % initial, file=sys.stderr)
         return 2
@@ -468,6 +503,15 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         conversation_shortcut.activated.connect(open_written_conversation)
         window._velvet_written_conversation_shortcut = conversation_shortcut  # type: ignore[attr-defined]
+
+    if foundry_scene is not None:
+        foundry_shortcut = QShortcut(QKeySequence("Ctrl+Alt+F"), window)
+
+        def open_character_foundry() -> None:
+            router.navigate("character_foundry")
+
+        foundry_shortcut.activated.connect(open_character_foundry)
+        window._velvet_character_foundry_shortcut = foundry_shortcut  # type: ignore[attr-defined]
 
     if args.fullscreen:
         window.showFullScreen()
