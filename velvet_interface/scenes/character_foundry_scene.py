@@ -22,13 +22,13 @@ class CharacterFoundryScene(Scene):
         self,
         bridge: FoundryBridge,
         access_provider: Any,
-        background_path: Path,
+        background_path: Optional[Path] = None,
         scene_id: str = "character_foundry",
     ) -> None:
         super().__init__(scene_id)
         self.bridge = bridge
         self.access_provider = access_provider
-        self.background_path = Path(background_path)
+        self.background_path = Path(background_path or "examples/assets/workspace_scroll.png")
         self._router = None
         self._surface = None
         self._widget = None
