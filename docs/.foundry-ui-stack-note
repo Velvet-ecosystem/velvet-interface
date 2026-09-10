@@ -1,0 +1,5 @@
+Character Foundry Interface review order:
+1. Merge PR #43 (Interface boundary).
+2. Refresh and retarget the workspace UI branch to main.
+3. Add final launcher registration only after the boundary is present on main.
+4. Map Forge artwork press points from placement-debug rather than guessed coordinates.
