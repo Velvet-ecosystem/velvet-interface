@@ -53,7 +53,12 @@ class _FakeService:
         return result
 
     def validate(self, mapping):
-        return {"valid": True, "candidate_id": mapping["candidate"]["candidate_id"]}
+        return {
+            "valid": True,
+            "candidate_id": mapping["candidate"]["candidate_id"],
+            "normalized": mapping,
+            "errors": (),
+        }
 
     def create(self, mapping):
         return _Snapshot(summary=self.summary, normalized=mapping)
@@ -96,6 +101,7 @@ class CharacterFoundryInterfaceTests(unittest.TestCase):
         self.assertEqual(listed[0]["identity_level"], 2)
         created = bridge.create(bridge.scaffold("candidate_one", "character", "Candidate One"))
         self.assertEqual(created["summary"]["content_hash"], "sha256:one")
+        self.assertEqual(created["content_hash"], "sha256:one")
         self.assertEqual(created["normalized"]["security_invariants"]["authority_source"], "none")
 
     def test_bridge_does_not_change_promotion_decision_or_authority(self):
@@ -123,10 +129,11 @@ class CharacterFoundryInterfaceTests(unittest.TestCase):
         self.assertTrue(scene._go_back())
         self.assertEqual(router.back_calls, 1)
 
-    def test_scene_is_not_a_manifest_loaded_widget(self):
+    def test_scene_defaults_to_reusable_workspace_scroll(self):
         bridge = FoundryBridge(Path("unused"), service=_FakeService())
         scene = CharacterFoundryScene(bridge=bridge, access_provider=lambda: True)
         self.assertEqual(scene.scene_id, "character_foundry")
+        self.assertEqual(scene.background_path.as_posix(), "examples/assets/workspace_scroll.png")
         self.assertFalse(scene.is_active)
         scene.on_enter()
         self.assertTrue(scene.is_active)
