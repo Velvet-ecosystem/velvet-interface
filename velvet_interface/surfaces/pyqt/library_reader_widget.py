@@ -118,7 +118,7 @@ class QtLibraryReaderWidget(QWidget):
         section = QLabel("Shelves")
         section.setObjectName("librarySection")
         self.search_box = QLineEdit()
-        self.search_box.setPlaceholderText("Search title or path")
+        self.search_box.setPlaceholderText("Search title, collection, source or path")
         self.item_list = QListWidget()
         self.open_button = QPushButton("Open")
         self.refresh_button = QPushButton("Refresh")
@@ -162,6 +162,12 @@ class QtLibraryReaderWidget(QWidget):
         self.path_label.setWordWrap(True)
         self.format_label = QLabel("Format: —")
         self.size_label = QLabel("Size: —")
+        self.collection_label = QLabel("Collection: —")
+        self.collection_label.setWordWrap(True)
+        self.source_label = QLabel("Source: —")
+        self.source_label.setWordWrap(True)
+        self.extraction_label = QLabel("Index: —")
+        self.extraction_label.setWordWrap(True)
         boundary = QLabel(
             "READ ONLY\n"
             "No scripts executed\n"
@@ -174,6 +180,9 @@ class QtLibraryReaderWidget(QWidget):
         layout.addWidget(self.path_label)
         layout.addWidget(self.format_label)
         layout.addWidget(self.size_label)
+        layout.addWidget(self.collection_label)
+        layout.addWidget(self.source_label)
+        layout.addWidget(self.extraction_label)
         layout.addSpacing(12)
         layout.addWidget(boundary)
         layout.addStretch(1)
@@ -195,7 +204,12 @@ class QtLibraryReaderWidget(QWidget):
             self.item_list.addItem(row)
             self._items[item.relative_path] = item
         if self.provider.root.is_dir():
-            self._status("%d item%s visible" % (len(items), "" if len(items) == 1 else "s"))
+            catalog_mode = bool(getattr(self.provider, "catalog_available", False))
+            source = "catalog" if catalog_mode else "filesystem preview"
+            self._status(
+                "%d item%s visible · %s"
+                % (len(items), "" if len(items) == 1 else "s", source)
+            )
         else:
             self._status("Library root not mounted: %s" % self.provider.root)
 
@@ -220,6 +234,10 @@ class QtLibraryReaderWidget(QWidget):
                 path = self.provider.path_for(item)
                 self.reader.document().setBaseUrl(QUrl.fromLocalFile(str(path.parent) + "/"))
                 self.reader.setHtml(self.provider.read_text(item))
+            elif item.preview_kind in {"pdf", "epub"} and self._has_extracted_text(item):
+                self.reader.document().setBaseUrl(QUrl())
+                self.reader.setPlainText(self.provider.read_text(item))
+                self.reader_mode.setText(item.preview_kind.upper() + " TEXT")
             else:
                 self._show_adapter_placeholder(item)
         except (FileNotFoundError, OSError, UnicodeError, ValueError) as exc:
@@ -228,17 +246,26 @@ class QtLibraryReaderWidget(QWidget):
             return
         self._status("Opened read-only: %s" % item.relative_path)
 
+    def _has_extracted_text(self, item: LibraryPreviewItem) -> bool:
+        checker = getattr(self.provider, "has_extracted_text", None)
+        if not callable(checker):
+            return False
+        try:
+            return bool(checker(item))
+        except (OSError, RuntimeError, ValueError):
+            return False
+
     def _show_adapter_placeholder(self, item: LibraryPreviewItem) -> None:
         labels = {
-            "pdf": "PDF renderer adapter is not connected yet.",
-            "epub": "EPUB renderer adapter is not connected yet.",
-            "zim": "ZIM/Kiwix reader adapter is not connected yet.",
+            "pdf": "PDF text is not indexed yet. Install/enable the PDF extractor and reindex this item.",
+            "epub": "EPUB text is not indexed yet.",
+            "zim": "This ZIM archive belongs to the dedicated local Kiwix reader bridge.",
         }
         message = labels.get(item.preview_kind, "No preview adapter is connected for this format.")
         self.reader.setHtml(
             "<h2>%s</h2><p>%s</p>"
-            "<p>The original remains catalogued and untouched. This surface will use the "
-            "dedicated adapter when that backend contract is implemented.</p>"
+            "<p>The original remains catalogued and untouched. Reader support never changes "
+            "the source document.</p>"
             % (item.title, message)
         )
 
@@ -246,6 +273,21 @@ class QtLibraryReaderWidget(QWidget):
         self.path_label.setText(item.relative_path)
         self.format_label.setText("Format: %s" % (item.suffix.lstrip(".").upper() or "unknown"))
         self.size_label.setText("Size: %s" % self._format_bytes(item.size_bytes))
+        metadata_reader = getattr(self.provider, "metadata_for", None)
+        metadata = metadata_reader(item) if callable(metadata_reader) else None
+        if metadata is None:
+            self.collection_label.setText("Collection: filesystem preview")
+            self.source_label.setText("Source: local file")
+            self.extraction_label.setText("Index: preview only")
+            return
+        self.collection_label.setText("Collection: %s" % (metadata.collection or "—"))
+        self.source_label.setText("Source: %s" % (metadata.source or "—"))
+        adapter = metadata.adapter_id or "none"
+        version = ("@" + metadata.adapter_version) if metadata.adapter_version else ""
+        text = "Index: %s · %s%s" % (metadata.extraction_status, adapter, version)
+        if metadata.extraction_note:
+            text += "\n" + metadata.extraction_note
+        self.extraction_label.setText(text)
 
     @staticmethod
     def _format_bytes(size: int) -> str:
