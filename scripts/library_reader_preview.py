@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 
-from velvet_interface.library_preview import LocalLibraryPreviewProvider
+from velvet_interface.catalog_library_preview import CatalogLibraryPreviewProvider
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -19,6 +19,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path(os.environ.get("VELVET_LIBRARY_ROOT", "/srv/velvet")),
         help="configured local vault/library root; default: VELVET_LIBRARY_ROOT or /srv/velvet",
+    )
+    parser.add_argument(
+        "--catalog",
+        type=Path,
+        default=None,
+        help="optional catalog/items.jsonl override; defaults beneath the selected library root",
     )
     parser.add_argument(
         "--background",
@@ -44,7 +50,10 @@ def main() -> int:
 
     app = QApplication(sys.argv)
     widget = QtLibraryReaderWidget(
-        provider=LocalLibraryPreviewProvider(args.library_root),
+        provider=CatalogLibraryPreviewProvider(
+            args.library_root,
+            catalog_path=args.catalog,
+        ),
         target_size=(args.width, args.height),
         background_path=args.background,
     )
