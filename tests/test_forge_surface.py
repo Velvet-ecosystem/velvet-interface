@@ -91,7 +91,11 @@ class ForgeSurfaceTests(unittest.TestCase):
         self.assertEqual(points["return_home"]["action"], "navigate:founder_home")
         self.assertEqual(points["emergency"]["action"], "navigate:emergency")
         self.assertEqual(document["metadata"]["physical_control"], "disabled")
-        self.assertIn("Six Forge workstations mapped", document["metadata"]["implementation_status"])\n        placeholder = yaml.safe_load(Path("examples/surfaces/forge_workspace.surface.yaml").read_text(encoding="utf-8"))\n        self.assertEqual(placeholder["name"], "forge_workspace")\n        self.assertEqual(placeholder["metadata"]["physical_control"], "disabled")\n        self.assertEqual(placeholder["press_points"][0]["action"], "navigate:forge")
+        self.assertIn("Six Forge workstations mapped", document["metadata"]["implementation_status"])
+        placeholder = yaml.safe_load(Path("examples/surfaces/forge_workspace.surface.yaml").read_text(encoding="utf-8"))
+        self.assertEqual(placeholder["name"], "forge_workspace")
+        self.assertEqual(placeholder["metadata"]["physical_control"], "disabled")
+        self.assertEqual(placeholder["press_points"][0]["action"], "navigate:forge")
 
     def test_reusable_workspace_scroll_asset_exists(self):
         self.assertTrue(Path("examples/assets/workspace_scroll.png").is_file())
