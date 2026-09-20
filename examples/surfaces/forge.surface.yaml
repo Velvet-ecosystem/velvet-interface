@@ -35,7 +35,7 @@ press_points:
     - 0.638889
   - - 0.470486
     - 0.679012
-  action: navigate:forge_workspace
+  action: navigate:eleanor_engineering
   label: Eleanor Engineering
   accessibility_label: Open Eleanor engineering workspace
   z_index: 10
@@ -145,4 +145,4 @@ metadata:
   posture: presentation-only
   physical_control: disabled
   purpose: Builder workspace for characters, software modules, hardware modules, testing, engineering design, and Interface tools
-  implementation_status: Six Forge workstations mapped; Character Foundry and Surface Studio use live built-in scenes, remaining stations use the safe temporary Forge workspace
+  implementation_status: Six Forge workstations mapped; Eleanor Engineering, Character Foundry, and Surface Studio use live built-in scenes, remaining stations use the safe temporary Forge workspace

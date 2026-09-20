@@ -107,6 +107,29 @@ def build_parser() -> argparse.ArgumentParser:
         help="do not register the trusted built-in Character Foundry scene",
     )
     parser.add_argument(
+        "--eleanor-executable",
+        type=Path,
+        default=Path(os.environ.get(
+            "VELVET_ELEANOR_EXECUTABLE",
+            str(Path.home() / "velvet/.venvs/eleanor/bin/eleanor-engineering"),
+        )),
+        help="canonical Eleanor CLI used by the presentation-only workbench",
+    )
+    parser.add_argument(
+        "--eleanor-project",
+        type=Path,
+        default=Path(os.environ.get(
+            "VELVET_ELEANOR_PROJECT",
+            str(Path.home() / "velvet/velvet-eleanor-engineering/projects/automotive-interface-io-v0/engineering-project.yaml"),
+        )),
+        help="Eleanor engineering project manifest displayed by the workbench",
+    )
+    parser.add_argument(
+        "--disable-eleanor-engineering",
+        action="store_true",
+        help="do not register the trusted built-in Eleanor Engineering scene",
+    )
+    parser.add_argument(
         "--boot-snapshot",
         type=Path,
         default=Path(
@@ -409,6 +432,21 @@ def main(argv: Optional[List[str]] = None) -> int:
                 file=sys.stderr,
             )
 
+    eleanor_scene = None
+    if not args.disable_eleanor_engineering:
+        try:
+            from velvet_interface.eleanor_bridge import EleanorBridge
+            from velvet_interface.scenes.eleanor_engineering_scene import EleanorEngineeringScene
+
+            eleanor_scene = EleanorEngineeringScene(
+                bridge=EleanorBridge(args.eleanor_executable, args.eleanor_project),
+            )
+            eleanor_scene.bind_router(router)
+            router.register_scene(eleanor_scene)
+        except (ImportError, ValueError, OSError) as exc:
+            eleanor_scene = None
+            print("Eleanor Engineering surface unavailable: %s" % exc, file=sys.stderr)
+
     studio_scene = None
     if not args.disable_surface_studio:
         workspace = SurfaceWorkspace(
@@ -463,7 +501,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     initial = requested_initial
     if initial not in router.list_scenes():
-        built_in_tools = {"surface_studio", "written_conversation", "character_foundry"}
+        built_in_tools = {"surface_studio", "written_conversation", "character_foundry", "eleanor_engineering"}
         ordinary = [
             name for name in sorted(router.list_scenes()) if name not in built_in_tools
         ]
