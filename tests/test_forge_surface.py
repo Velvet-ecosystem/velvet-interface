@@ -5,7 +5,7 @@ import yaml
 
 
 class ForgeSurfaceTests(unittest.TestCase):
-    def test_forge_surface_maps_five_workstations(self):
+    def test_forge_surface_maps_six_workstations(self):
         path = Path("examples/surfaces/forge.surface.yaml")
         document = yaml.safe_load(path.read_text(encoding="utf-8"))
         self.assertEqual(document["name"], "forge")
@@ -16,6 +16,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                 "return_home",
                 "eleanor_engineering",
                 "character_foundry",
+                "engineering_design",
                 "module_lab",
                 "test_bench",
                 "surface_studio",
@@ -42,12 +43,21 @@ class ForgeSurfaceTests(unittest.TestCase):
                 ],
                 "action": "emit:forge.character_foundry.selected",
             },
+            "engineering_design": {
+                "polygon": [
+                    [0.001736, 0.401235],
+                    [0.093750, 0.416667],
+                    [0.150174, 0.529321],
+                    [0.039062, 0.533951],
+                ],
+                "action": "emit:forge.engineering_design.selected",
+            },
             "module_lab": {
                 "polygon": [
-                    [0.000868, 0.405864],
-                    [0.098958, 0.418210],
-                    [0.147569, 0.521605],
-                    [0.040799, 0.540123],
+                    [0.848958, 0.365741],
+                    [0.993924, 0.348765],
+                    [0.989583, 0.523148],
+                    [0.847222, 0.516975],
                 ],
                 "action": "emit:forge.module_lab.selected",
             },
@@ -81,7 +91,7 @@ class ForgeSurfaceTests(unittest.TestCase):
         self.assertEqual(points["return_home"]["action"], "navigate:founder_home")
         self.assertEqual(points["emergency"]["action"], "navigate:emergency")
         self.assertEqual(document["metadata"]["physical_control"], "disabled")
-        self.assertIn("Five Forge workstations mapped", document["metadata"]["implementation_status"])
+        self.assertIn("Six Forge workstations mapped", document["metadata"]["implementation_status"])
 
     def test_reusable_workspace_scroll_asset_exists(self):
         self.assertTrue(Path("examples/assets/workspace_scroll.png").is_file())
