@@ -35,7 +35,7 @@ press_points:
     - 0.638889
   - - 0.470486
     - 0.679012
-  action: emit:forge.eleanor.selected
+  action: navigate:forge_workspace
   label: Eleanor Engineering
   accessibility_label: Open Eleanor engineering workspace
   z_index: 10
@@ -51,7 +51,7 @@ press_points:
     - 0.509259
   - - 0.251736
     - 0.516975
-  action: emit:forge.character_foundry.selected
+  action: navigate:character_foundry
   label: Character Foundry
   accessibility_label: Open Character Foundry
   z_index: 10
@@ -67,7 +67,7 @@ press_points:
     - 0.529321
   - - 0.039062
     - 0.533951
-  action: emit:forge.engineering_design.selected
+  action: navigate:forge_workspace
   label: Engineering Design
   accessibility_label: Open Engineering Design workspace
   z_index: 10
@@ -83,7 +83,7 @@ press_points:
     - 0.523148
   - - 0.847222
     - 0.516975
-  action: emit:forge.module_lab.selected
+  action: navigate:forge_workspace
   label: Module Lab / Hardware Engineering
   accessibility_label: Open Module Lab and hardware engineering
   z_index: 10
@@ -99,7 +99,7 @@ press_points:
     - 0.740741
   - - 0.909722
     - 0.703704
-  action: emit:forge.test_bench.selected
+  action: navigate:forge_workspace
   label: Test Bench / Validation
   accessibility_label: Open Test Bench and validation
   z_index: 10
@@ -115,7 +115,7 @@ press_points:
     - 0.827160
   - - 0.004340
     - 0.919753
-  action: emit:forge.surface_studio.selected
+  action: navigate:surface_studio
   label: Surface Studio / Interface Builder
   accessibility_label: Open Surface Studio and Interface Builder
   z_index: 10
@@ -145,4 +145,4 @@ metadata:
   posture: presentation-only
   physical_control: disabled
   purpose: Builder workspace for characters, software modules, hardware modules, testing, engineering design, and Interface tools
-  implementation_status: Six Forge workstations mapped on Founder; destination surfaces remain safely decoupled from physical execution
+  implementation_status: Six Forge workstations mapped; Character Foundry and Surface Studio use live built-in scenes, remaining stations use the safe temporary Forge workspace
