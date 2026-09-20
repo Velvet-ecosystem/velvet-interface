@@ -40,6 +40,70 @@ press_points:
   accessibility_label: Open Eleanor engineering workspace
   z_index: 10
   enabled: true
+- id: character_foundry
+  coordinate_space: normalized
+  polygon:
+  - - 0.237847
+    - 0.324074
+  - - 0.322049
+    - 0.339506
+  - - 0.334201
+    - 0.509259
+  - - 0.251736
+    - 0.516975
+  action: emit:forge.character_foundry.selected
+  label: Character Foundry
+  accessibility_label: Open Character Foundry
+  z_index: 10
+  enabled: true
+- id: module_lab
+  coordinate_space: normalized
+  polygon:
+  - - 0.000868
+    - 0.405864
+  - - 0.098958
+    - 0.418210
+  - - 0.147569
+    - 0.521605
+  - - 0.040799
+    - 0.540123
+  action: emit:forge.module_lab.selected
+  label: Module Lab / Hardware Engineering
+  accessibility_label: Open Module Lab and hardware engineering
+  z_index: 10
+  enabled: true
+- id: test_bench
+  coordinate_space: normalized
+  polygon:
+  - - 0.908854
+    - 0.578704
+  - - 0.967882
+    - 0.609568
+  - - 0.963542
+    - 0.740741
+  - - 0.909722
+    - 0.703704
+  action: emit:forge.test_bench.selected
+  label: Test Bench / Validation
+  accessibility_label: Open Test Bench and validation
+  z_index: 10
+  enabled: true
+- id: surface_studio
+  coordinate_space: normalized
+  polygon:
+  - - 0.006076
+    - 0.699074
+  - - 0.050347
+    - 0.688272
+  - - 0.260417
+    - 0.827160
+  - - 0.004340
+    - 0.919753
+  action: emit:forge.surface_studio.selected
+  label: Surface Studio / Interface Builder
+  accessibility_label: Open Surface Studio and Interface Builder
+  z_index: 10
+  enabled: true
 - id: emergency
   coordinate_space: normalized
   polygon:
@@ -64,5 +128,5 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  purpose: Builder workspace for characters, software modules, hardware modules, testing, and future Interface tools
-  implementation_status: Eleanor desk mapped on Founder; remaining Forge tool points await placement mapping
+  purpose: Builder workspace for characters, software modules, hardware modules, testing, and Interface tools
+  implementation_status: Five Forge workstations mapped on Founder; destination surfaces remain safely decoupled from physical execution
