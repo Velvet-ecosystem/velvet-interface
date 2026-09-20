@@ -24,6 +24,22 @@ press_points:
   accessibility_label: Return to the Front Room
   z_index: 10
   enabled: true
+- id: eleanor_engineering
+  coordinate_space: normalized
+  polygon:
+  - - 0.362847
+    - 0.566358
+  - - 0.654514
+    - 0.543210
+  - - 0.758681
+    - 0.638889
+  - - 0.470486
+    - 0.679012
+  action: emit:forge.eleanor.selected
+  label: Eleanor Engineering
+  accessibility_label: Open Eleanor engineering workspace
+  z_index: 10
+  enabled: true
 - id: emergency
   coordinate_space: normalized
   polygon:
@@ -49,4 +65,4 @@ metadata:
   posture: presentation-only
   physical_control: disabled
   purpose: Builder workspace for characters, software modules, hardware modules, testing, and future Interface tools
-  implementation_status: Forge artwork installed; functional press points intentionally awaiting placement mapping
+  implementation_status: Eleanor desk mapped on Founder; remaining Forge tool points await placement mapping
