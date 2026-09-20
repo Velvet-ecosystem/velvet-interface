@@ -104,6 +104,22 @@ press_points:
   accessibility_label: Open vehicle status
   z_index: 10
   enabled: true
+- id: forge
+  coordinate_space: normalized
+  polygon:
+  - - 0.664931
+    - 0.679012
+  - - 0.834201
+    - 0.726852
+  - - 0.829861
+    - 0.828704
+  - - 0.668403
+    - 0.776235
+  action: navigate:forge
+  label: Key Rack / Forge
+  accessibility_label: Open the Forge workspace
+  z_index: 10
+  enabled: true
 - id: emergency
   coordinate_space: normalized
   polygon:
