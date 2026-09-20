@@ -32,7 +32,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.758681, 0.638889],
                     [0.470486, 0.679012],
                 ],
-                "action": "navigate:forge_workspace",
+                "action": "navigate:eleanor_engineering",
             },
             "character_foundry": {
                 "polygon": [
