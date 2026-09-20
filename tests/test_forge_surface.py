@@ -32,7 +32,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.758681, 0.638889],
                     [0.470486, 0.679012],
                 ],
-                "action": "emit:forge.eleanor.selected",
+                "action": "navigate:forge_workspace",
             },
             "character_foundry": {
                 "polygon": [
@@ -41,7 +41,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.334201, 0.509259],
                     [0.251736, 0.516975],
                 ],
-                "action": "emit:forge.character_foundry.selected",
+                "action": "navigate:character_foundry",
             },
             "engineering_design": {
                 "polygon": [
@@ -50,7 +50,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.150174, 0.529321],
                     [0.039062, 0.533951],
                 ],
-                "action": "emit:forge.engineering_design.selected",
+                "action": "navigate:forge_workspace",
             },
             "module_lab": {
                 "polygon": [
@@ -59,7 +59,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.989583, 0.523148],
                     [0.847222, 0.516975],
                 ],
-                "action": "emit:forge.module_lab.selected",
+                "action": "navigate:forge_workspace",
             },
             "test_bench": {
                 "polygon": [
@@ -68,7 +68,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.963542, 0.740741],
                     [0.909722, 0.703704],
                 ],
-                "action": "emit:forge.test_bench.selected",
+                "action": "navigate:forge_workspace",
             },
             "surface_studio": {
                 "polygon": [
@@ -77,7 +77,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.260417, 0.827160],
                     [0.004340, 0.919753],
                 ],
-                "action": "emit:forge.surface_studio.selected",
+                "action": "navigate:surface_studio",
             },
         }
 
@@ -91,7 +91,7 @@ class ForgeSurfaceTests(unittest.TestCase):
         self.assertEqual(points["return_home"]["action"], "navigate:founder_home")
         self.assertEqual(points["emergency"]["action"], "navigate:emergency")
         self.assertEqual(document["metadata"]["physical_control"], "disabled")
-        self.assertIn("Six Forge workstations mapped", document["metadata"]["implementation_status"])
+        self.assertIn("Six Forge workstations mapped", document["metadata"]["implementation_status"])\n        placeholder = yaml.safe_load(Path("examples/surfaces/forge_workspace.surface.yaml").read_text(encoding="utf-8"))\n        self.assertEqual(placeholder["name"], "forge_workspace")\n        self.assertEqual(placeholder["metadata"]["physical_control"], "disabled")\n        self.assertEqual(placeholder["press_points"][0]["action"], "navigate:forge")
 
     def test_reusable_workspace_scroll_asset_exists(self):
         self.assertTrue(Path("examples/assets/workspace_scroll.png").is_file())
