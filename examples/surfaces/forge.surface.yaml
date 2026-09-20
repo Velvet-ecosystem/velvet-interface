@@ -59,14 +59,14 @@ press_points:
 - id: module_lab
   coordinate_space: normalized
   polygon:
-  - - 0.000868
-    - 0.405864
-  - - 0.098958
-    - 0.418210
-  - - 0.147569
-    - 0.521605
-  - - 0.040799
-    - 0.540123
+  - - 0.848958
+    - 0.365741
+  - - 0.993924
+    - 0.348765
+  - - 0.989583
+    - 0.523148
+  - - 0.847222
+    - 0.516975
   action: emit:forge.module_lab.selected
   label: Module Lab / Hardware Engineering
   accessibility_label: Open Module Lab and hardware engineering
