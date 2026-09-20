@@ -56,6 +56,22 @@ press_points:
   accessibility_label: Open Character Foundry
   z_index: 10
   enabled: true
+- id: engineering_design
+  coordinate_space: normalized
+  polygon:
+  - - 0.001736
+    - 0.401235
+  - - 0.093750
+    - 0.416667
+  - - 0.150174
+    - 0.529321
+  - - 0.039062
+    - 0.533951
+  action: emit:forge.engineering_design.selected
+  label: Engineering Design
+  accessibility_label: Open Engineering Design workspace
+  z_index: 10
+  enabled: true
 - id: module_lab
   coordinate_space: normalized
   polygon:
@@ -128,5 +144,5 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  purpose: Builder workspace for characters, software modules, hardware modules, testing, and Interface tools
-  implementation_status: Five Forge workstations mapped on Founder; destination surfaces remain safely decoupled from physical execution
+  purpose: Builder workspace for characters, software modules, hardware modules, testing, engineering design, and Interface tools
+  implementation_status: Six Forge workstations mapped on Founder; destination surfaces remain safely decoupled from physical execution
