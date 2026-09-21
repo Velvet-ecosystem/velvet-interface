@@ -379,13 +379,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     conversation_scene = None
     if not args.disable_written_conversation:
         try:
-            from services.conversation_unix_transport import UnixConversationClient
+            from velvet_interface.conversation_bridge import UnixConversationBridge
             from velvet_interface.scenes.written_conversation_scene import WrittenConversationScene
 
-            conversation_client = UnixConversationClient(
+            conversation_client = UnixConversationBridge(
                 args.conversation_socket,
                 timeout_seconds=2.0,
-                retries=0,
             )
 
             def conversation_access_provider() -> bool:
