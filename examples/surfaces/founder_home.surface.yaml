@@ -104,6 +104,22 @@ press_points:
   accessibility_label: Open vehicle status
   z_index: 10
   enabled: true
+- id: velvet_conversation
+  coordinate_space: normalized
+  polygon:
+  - - 0.43
+    - 0.07
+  - - 0.57
+    - 0.07
+  - - 0.57
+    - 0.21
+  - - 0.43
+    - 0.21
+  action: navigate:written_conversation
+  label: Velvet / Conversation
+  accessibility_label: Talk to Velvet
+  z_index: 40
+  enabled: true
 - id: forge
   coordinate_space: normalized
   polygon:
@@ -171,3 +187,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
+  conversation_entry: velvet_presence
