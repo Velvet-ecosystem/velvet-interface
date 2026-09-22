@@ -21,6 +21,7 @@ class FounderDevLauncherTests(unittest.TestCase):
             "printf 'args=%s\\n' \"$*\" > \"$VELVET_TEST_LOG\"\n"
             "printf 'boot=%s\\n' \"$VELVET_BOOT_SNAPSHOT_PATH\" >> \"$VELVET_TEST_LOG\"\n"
             "printf 'socket=%s\\n' \"$VELVET_CONVERSATION_SOCKET_PATH\" >> \"$VELVET_TEST_LOG\"\n"
+            "printf 'interface_dev=%s\\n' \"$VELVET_INTERFACE_DEVELOPMENT\" >> \"$VELVET_TEST_LOG\"\n"
             "exit 0\n",
             encoding="utf-8",
         )
@@ -47,6 +48,7 @@ class FounderDevLauncherTests(unittest.TestCase):
             )
             environment.pop("VELVET_BOOT_SNAPSHOT_PATH", None)
             environment.pop("VELVET_CONVERSATION_SOCKET_PATH", None)
+            environment.pop("VELVET_INTERFACE_DEVELOPMENT", None)
 
             result = subprocess.run(
                 ["bash", str(LAUNCHER), "--width", "1152", "--height", "648"],
@@ -65,8 +67,9 @@ class FounderDevLauncherTests(unittest.TestCase):
             )
             self.assertIn("boot=%s" % (dev / "first-boot-snapshot.json"), output)
             self.assertIn("socket=%s" % (dev / "run" / "conversation.sock"), output)
+            self.assertIn("interface_dev=true", output)
 
-    def test_explicit_runtime_paths_are_preserved(self):
+    def test_explicit_runtime_paths_and_development_marker_are_preserved(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             runtime = root / "velvet-runtime"
@@ -85,6 +88,7 @@ class FounderDevLauncherTests(unittest.TestCase):
                     "VELVET_TEST_LOG": str(log),
                     "VELVET_BOOT_SNAPSHOT_PATH": str(boot),
                     "VELVET_CONVERSATION_SOCKET_PATH": str(socket),
+                    "VELVET_INTERFACE_DEVELOPMENT": "false",
                 }
             )
 
@@ -101,6 +105,7 @@ class FounderDevLauncherTests(unittest.TestCase):
             output = log.read_text(encoding="utf-8")
             self.assertIn("boot=%s" % boot, output)
             self.assertIn("socket=%s" % socket, output)
+            self.assertIn("interface_dev=false", output)
 
 
 if __name__ == "__main__":
