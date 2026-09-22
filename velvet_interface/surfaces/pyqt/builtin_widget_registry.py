@@ -17,12 +17,20 @@ def _development_mode() -> bool:
     return _env_true("VELVET_INTERFACE_DEVELOPMENT") or runtime_mode.startswith("development")
 
 
-def resolve_builtin_widget(widget_id: str) -> Optional[Any]:
+def resolve_builtin_widget(
+    widget_id: str,
+    *,
+    eleanor_executable: Optional[Path] = None,
+    eleanor_project: Optional[Path] = None,
+    modules_root: Optional[Path] = None,
+    development_mode: Optional[bool] = None,
+) -> Optional[Any]:
     """Return one trusted built-in QWidget for an exact allow-listed ID.
 
     Surface manifests cannot name Python modules or commands. They may only
     request IDs in this registry, and each registered Forge widget is backed by
-    a read-only bridge.
+    a read-only bridge. Founder may inject already-resolved local source paths;
+    standalone image surfaces fall back to the documented environment/defaults.
     """
 
     allowed = {
@@ -43,15 +51,17 @@ def resolve_builtin_widget(widget_id: str) -> Optional[Any]:
         QtForgeWorkspaceWidget,
     )
 
-    development = _development_mode()
+    development = _development_mode() if development_mode is None else bool(development_mode)
     if widget_id == "forge_module_lab":
-        modules_root = Path(
-            os.environ.get(
+        resolved_modules_root = Path(
+            modules_root
+            if modules_root is not None
+            else os.environ.get(
                 "VELVET_MODULES_ROOT",
                 str(Path.home() / "velvet/Modules"),
             )
-        )
-        bridge = ModuleLabBridge(modules_root)
+        ).expanduser()
+        bridge = ModuleLabBridge(resolved_modules_root)
         return QtForgeWorkspaceWidget(
             "module_lab",
             bridge.snapshot,
@@ -59,20 +69,24 @@ def resolve_builtin_widget(widget_id: str) -> Optional[Any]:
         )
 
     executable = Path(
-        os.environ.get(
+        eleanor_executable
+        if eleanor_executable is not None
+        else os.environ.get(
             "VELVET_ELEANOR_EXECUTABLE",
             str(Path.home() / "velvet/.venvs/eleanor/bin/eleanor-engineering"),
         )
-    )
+    ).expanduser()
     project = Path(
-        os.environ.get(
+        eleanor_project
+        if eleanor_project is not None
+        else os.environ.get(
             "VELVET_ELEANOR_PROJECT",
             str(
                 Path.home()
                 / "velvet/velvet-eleanor-engineering/projects/automotive-interface-io-v0/engineering-project.yaml"
             ),
         )
-    )
+    ).expanduser()
     eleanor = EleanorBridge(executable, project)
     if widget_id == "forge_engineering_design":
         bridge = EngineeringDesignBridge(eleanor)
