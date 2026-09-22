@@ -40,7 +40,20 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
-widgets: []
+widgets:
+- widget_id: microphone_input_status
+  coordinate_space: normalized
+  rect:
+  - 0.655
+  - 0.18
+  - 0.315
+  - 0.48
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only local microphone capture and channel-health evidence
 transitions:
   enter: fade
   exit: fade
@@ -48,4 +61,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary audio skin
+  implementation_status: Audio skin with live read-only microphone evidence; playback authority remains disabled
