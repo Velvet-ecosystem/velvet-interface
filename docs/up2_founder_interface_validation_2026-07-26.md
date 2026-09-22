@@ -132,3 +132,54 @@ power applied
 ```
 
 That startup path must remain fail-closed. It must not silently generate production identity, hide diagnostic failure, or enable physical control.
+
+
+## Founder workspace milestones
+
+The Founder display has now exercised two live Forge-backed workspaces on physical UP² hardware.
+
+### 1. Character Foundry
+
+Character Foundry is reachable from the mapped Forge workspace and renders its trusted full-screen editor backed by Persona Continuity's canonical Foundry service boundary.
+
+Physical Founder testing confirmed that the scene remains functional after the Persona Continuity dependency was installed and its integration changes were merged. The workspace remains authority-free: opening or editing a candidate does not grant promotion, deployment, capability, or physical-control authority.
+
+### 2. Eleanor Engineering
+
+Date: 2026-09-19
+
+Eleanor Engineering is the second live Forge workspace validated on the physical Founder display.
+
+The Founder Interface reaches Eleanor through a narrow presentation bridge while Eleanor remains isolated in her dedicated Python environment. The initial workbench presents canonical engineering state rather than duplicating Eleanor logic inside Interface.
+
+Physical UP² testing confirmed:
+
+- Eleanor reported online through the Founder workbench.
+- 10 engineering requirements were loaded from the configured project manifest.
+- validation reported 0 errors and 0 warnings during the test.
+- requirement identifiers, priorities, project status, and coverage state rendered on the Founder display.
+- Refresh and Back controls were functional parts of the v0 workspace.
+- uncovered requirements were displayed as uncovered rather than being promoted to a synthetic success state.
+
+The v0 bridge is deliberately allow-listed to the read-only `validate` and `coverage` operations. It does not expose arbitrary Eleanor commands.
+
+The displayed authority posture remains:
+
+```text
+AUTHORITY: PRESENTATION ONLY
+Physical execution: DISABLED
+Fabrication release: DISABLED
+Vehicle installation: DISABLED
+Unattended machine execution: DISABLED
+```
+
+This establishes the live path:
+
+```text
+Founder -> Forge -> Eleanor Engineering
+        -> Interface EleanorBridge
+        -> dedicated Eleanor environment
+        -> canonical engineering project state
+```
+
+The current scroll is the reusable workspace background. A later visual pass may integrate the standard Founder Back/Home, Emergency, and connectivity artwork into the workspace image without changing this authority boundary.
