@@ -67,7 +67,7 @@ press_points:
     - 0.529321
   - - 0.039062
     - 0.533951
-  action: navigate:forge_workspace
+  action: navigate:engineering_design
   label: Engineering Design
   accessibility_label: Open Engineering Design workspace
   z_index: 10
@@ -83,7 +83,7 @@ press_points:
     - 0.523148
   - - 0.847222
     - 0.516975
-  action: navigate:forge_workspace
+  action: navigate:module_lab
   label: Module Lab / Hardware Engineering
   accessibility_label: Open Module Lab and hardware engineering
   z_index: 10
@@ -99,7 +99,7 @@ press_points:
     - 0.740741
   - - 0.909722
     - 0.703704
-  action: navigate:forge_workspace
+  action: navigate:test_bench
   label: Test Bench / Validation
   accessibility_label: Open Test Bench and validation
   z_index: 10
@@ -145,4 +145,4 @@ metadata:
   posture: presentation-only
   physical_control: disabled
   purpose: Builder workspace for characters, software modules, hardware modules, testing, engineering design, and Interface tools
-  implementation_status: Six Forge workstations mapped; Eleanor Engineering, Character Foundry, and Surface Studio use live built-in scenes, remaining stations use the safe temporary Forge workspace
+  implementation_status: Six Forge workstations mapped; each station now has a dedicated Founder surface or trusted built-in scene
