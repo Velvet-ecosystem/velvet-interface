@@ -1,0 +1,66 @@
+schema: velvet.interface.surface.v1
+name: engineering_design
+base_resolution:
+- 1920
+- 1080
+background:
+  image: ../assets/workspace_scroll.png
+  fit: cover
+  alt_text: Velvet Engineering Design scroll
+press_points:
+- id: return_forge
+  coordinate_space: normalized
+  polygon:
+  - - 0.018
+    - 0.025
+  - - 0.135
+    - 0.025
+  - - 0.135
+    - 0.085
+  - - 0.018
+    - 0.085
+  action: navigate:forge
+  label: Return to Forge
+  accessibility_label: Return to the Forge
+  z_index: 30
+  enabled: true
+- id: emergency
+  coordinate_space: normalized
+  polygon:
+  - - 0.865
+    - 0.018
+  - - 0.988
+    - 0.018
+  - - 0.988
+    - 0.072
+  - - 0.865
+    - 0.072
+  action: navigate:emergency
+  label: Emergency
+  accessibility_label: Open emergency controls
+  z_index: 30
+  enabled: true
+widgets:
+- widget_id: forge_engineering_design
+  coordinate_space: normalized
+  rect:
+  - 0.0
+  - 0.0
+  - 1.0
+  - 1.0
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only projection of canonical Eleanor engineering project state
+transitions:
+  enter: fade
+  exit: fade
+metadata:
+  surface: Founder UP2
+  posture: presentation-only
+  physical_control: disabled
+  authority: none
+  purpose: Live Engineering Design ledger backed by canonical Eleanor project evidence
+  implementation_status: Live read-only workspace; mutation and physical execution are not exposed
