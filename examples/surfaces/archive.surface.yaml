@@ -40,6 +40,22 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
+- id: open_library
+  coordinate_space: normalized
+  polygon:
+  - - 0.12
+    - 0.10
+  - - 0.86
+    - 0.10
+  - - 0.86
+    - 0.90
+  - - 0.12
+    - 0.90
+  action: navigate:library_reader
+  label: Velour Library Reader
+  accessibility_label: Open the protected read-only Velvet library
+  z_index: 5
+  enabled: true
 widgets: []
 transitions:
   enter: fade
@@ -48,4 +64,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary archive skin
+  implementation_status: Archive room connected to the protected read-only Library Reader
