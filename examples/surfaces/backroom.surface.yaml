@@ -40,7 +40,85 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
-widgets: []
+widgets:
+- widget_id: founder_body_status
+  coordinate_space: normalized
+  rect:
+  - 0.03
+  - 0.12
+  - 0.30
+  - 0.30
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Runtime, body-state, sensor, health, receipt, and control-posture summary
+- widget_id: gnss_status
+  coordinate_space: normalized
+  rect:
+  - 0.35
+  - 0.12
+  - 0.29
+  - 0.26
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only GNSS evidence
+- widget_id: vehicle_power_status
+  coordinate_space: normalized
+  rect:
+  - 0.66
+  - 0.12
+  - 0.31
+  - 0.26
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only vehicle power evidence
+- widget_id: microphone_input_status
+  coordinate_space: normalized
+  rect:
+  - 0.03
+  - 0.52
+  - 0.30
+  - 0.31
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only microphone input health
+- widget_id: seat_presence_status
+  coordinate_space: normalized
+  rect:
+  - 0.35
+  - 0.52
+  - 0.29
+  - 0.31
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only aggregate seat and person-sense evidence
+- widget_id: nfc_status
+  coordinate_space: normalized
+  rect:
+  - 0.66
+  - 0.52
+  - 0.31
+  - 0.31
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only contactless verification evidence
 transitions:
   enter: fade
   exit: fade
@@ -48,4 +126,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary backroom skin
+  implementation_status: live read-only diagnostic wall using existing trusted Founder evidence widgets; no maintenance or hardware action is exposed
