@@ -10,7 +10,7 @@ The Founder interface now has a protected written surface that talks to Runtime 
 QtWrittenConversationWidget
         |
         v
-UnixConversationClient
+UnixConversationBridge
         |
         | AF_UNIX
         v
@@ -20,7 +20,7 @@ Velvet Runtime conversation service
         +--> Language expression
 ```
 
-Interface does not import Core, inspect body-state records, authorize actions, or execute anything.
+Interface owns only the narrow Unix client. It does not import Runtime, Core, inspect body-state records, authorize actions, or execute anything.
 
 ## Access
 
@@ -38,23 +38,15 @@ VELVET_MAINTENANCE_UNLOCKED=true
 
 Presentation mode alone is not treated as proof of owner identity.
 
-Open the scene with:
+Open the scene from the Founder Home VELVET presence hotspot or with:
 
 ```text
 Ctrl+Alt+C
 ```
 
-This avoids changing the current Founder room artwork, press points, or navigation maps. A visible room entrance can be added later as a normal navigation press point after the surface is proven on-device.
-
 ## Runtime service
 
-Runtime's conversation socket must be enabled separately:
-
-```bash
-export VELVET_CONVERSATION_SOCKET_ENABLED=true
-```
-
-Default endpoint:
+Runtime owns the server side of the conversation socket. Deployed/default endpoint:
 
 ```text
 /run/velvet/conversation.sock
@@ -65,6 +57,14 @@ The launcher also accepts:
 ```bash
 --conversation-socket /run/velvet/conversation.sock
 ```
+
+Repo-local development Runtime uses its own writable `.velvet-dev/run/conversation.sock`. When Interface and Runtime are sibling checkouts, use:
+
+```bash
+bash scripts/run_founder_dev.sh
+```
+
+That helper binds Interface to Runtime's development boot snapshot and conversation socket without changing production defaults. Runtime must still be running and its optional conversation service must be active.
 
 To omit the scene entirely:
 
