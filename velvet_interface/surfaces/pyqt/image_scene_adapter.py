@@ -27,7 +27,8 @@ class QtImageSceneWidget(QWidget):
 
     ``widget_provider`` is an explicit registry or callable. A manifest can place
     a widget only when trusted application code has registered that widget ID.
-    Missing widgets stay absent and are never replaced with synthetic values.
+    Missing provider entries may additionally resolve through the small built-in
+    allow-list in ``builtin_widget_registry``; manifests never name Python code.
 
     ``placement_debug`` draws authoring outlines above the artwork.
     ``coordinate_sink`` receives normalized click coordinates so the real target
@@ -140,14 +141,23 @@ class QtImageSceneWidget(QWidget):
 
     def _resolve_widget(self, widget_id: str) -> Any:
         provider = self.widget_provider
+        candidate = None
         if provider is None:
-            return None
-        if isinstance(provider, Mapping):
+            candidate = None
+        elif isinstance(provider, Mapping):
             candidate = provider.get(widget_id)
         elif callable(provider):
             candidate = provider(widget_id)
         else:
             raise TypeError("widget_provider must be a mapping or callable")
+
+        if candidate is None:
+            from velvet_interface.surfaces.pyqt.builtin_widget_registry import (
+                resolve_builtin_widget,
+            )
+
+            candidate = resolve_builtin_widget(widget_id)
+
         if callable(candidate) and not isinstance(candidate, QWidget):
             try:
                 return candidate()
