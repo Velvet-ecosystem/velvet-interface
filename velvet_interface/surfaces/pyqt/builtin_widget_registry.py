@@ -34,6 +34,7 @@ def resolve_builtin_widget(
 
     allowed = {
         "climate_environment_status",
+        "lighting_context_status",
         "forge_engineering_design",
         "forge_module_lab",
         "forge_test_bench",
@@ -41,15 +42,22 @@ def resolve_builtin_widget(
     if widget_id not in allowed:
         return None
 
-    if widget_id == "climate_environment_status":
-        from velvet_interface.surfaces.pyqt.climate_status_widget import (
-            QtClimateStatusWidget,
-        )
-
+    if widget_id in {"climate_environment_status", "lighting_context_status"}:
         body_snapshot = Path(
             os.environ.get("VELVET_BODY_SNAPSHOT_PATH", "/run/velvet/body-state.json")
         ).expanduser()
-        return QtClimateStatusWidget(body_snapshot)
+        if widget_id == "climate_environment_status":
+            from velvet_interface.surfaces.pyqt.climate_status_widget import (
+                QtClimateStatusWidget,
+            )
+
+            return QtClimateStatusWidget(body_snapshot)
+
+        from velvet_interface.surfaces.pyqt.lighting_context_widget import (
+            QtLightingContextWidget,
+        )
+
+        return QtLightingContextWidget(body_snapshot)
 
     from velvet_interface.eleanor_bridge import EleanorBridge
     from velvet_interface.forge_workspace_bridges import (
