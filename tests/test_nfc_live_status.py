@@ -27,6 +27,9 @@ class NfcLiveStatusTests(unittest.TestCase):
         self.assertTrue(status.available)
         self.assertEqual(status.state, "IDLE")
         self.assertEqual(status.reader_state, "ONLINE")
+        self.assertEqual(status.reader_id, "car-main")
+        self.assertEqual(status.reader_label, "Main in Car")
+        self.assertEqual(status.location_id, "vehicle.cabin")
         self.assertEqual(status.match_state, "NO PRESENTATION")
 
     def test_matched_factor_is_not_completed_verification(self) -> None:
@@ -36,6 +39,9 @@ class NfcLiveStatusTests(unittest.TestCase):
             status = load_nfc_live_status(path, now_monotonic=10.5)
         self.assertTrue(status.available)
         self.assertEqual(status.state, "MATCHED")
+        self.assertEqual(status.reader_id, "car-main")
+        self.assertEqual(status.reader_label, "Main in Car")
+        self.assertEqual(status.location_id, "vehicle.cabin")
         self.assertEqual(status.label, "Mister")
         self.assertEqual(status.role_hint, "owner")
         self.assertEqual(status.factor_confidence, 0.55)
@@ -84,6 +90,16 @@ class NfcLiveStatusTests(unittest.TestCase):
         self.assertEqual(status.state, "FAILED")
         self.assertEqual(status.reader_state, "FAILED")
 
+    def test_legacy_module_id_remains_readable(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "body.json"
+            record = _health_record("READY", "ONLINE")
+            record["payload"]["module_id"] = "contactless-token-main"
+            _write_snapshot(path, [record])
+            status = load_nfc_live_status(path, now_monotonic=10.0)
+        self.assertEqual(status.state, "IDLE")
+        self.assertEqual(status.reader_state, "ONLINE")
+
 
 def _write_snapshot(path: Path, records) -> None:
     path.write_text(
@@ -108,7 +124,9 @@ def _sensor_record(match_state: str, monotonic_time: float):
         "presentation_id": "presentation-id",
         "match_state": match_state,
         "token_ref": TOKEN_REF,
-        "reader_id": "rdm6300-main",
+        "reader_id": "car-main",
+        "reader_label": "Main in Car",
+        "location_id": "vehicle.cabin",
         "factor_confidence": 0.55 if matched else 0.0,
         "static_identifier": True,
         "cryptographic_challenge": False,
@@ -131,7 +149,7 @@ def _sensor_record(match_state: str, monotonic_time: float):
         "event_type": "SENSOR_PACKET_OBSERVED",
         "family": "sensor",
         "payload": {
-            "module_id": "contactless-token-main",
+            "module_id": "contactless-token-car-main",
             "node_id": "founder-up2",
             "owning_handmaiden": "Velvet",
             "timestamp": 100.0,
@@ -145,7 +163,7 @@ def _sensor_record(match_state: str, monotonic_time: float):
             "source_clock": "device",
             "stale_after_ms": 5000,
             "calibration_version": "rdm6300-em4100-v1",
-            "raw_reference": "reader:rdm6300-main",
+            "raw_reference": "reader:car-main",
         },
     }
 
@@ -158,7 +176,7 @@ def _health_record(event_type: str, state_after: str):
         "payload": {
             "event_id": "nfc-health-receipt-%s" % event_type,
             "event_type": event_type,
-            "module_id": "contactless-token-main",
+            "module_id": "contactless-token-car-main",
             "node_id": "founder-up2",
             "owning_handmaiden": "Velvet",
             "timestamp": 100.0,
@@ -169,6 +187,9 @@ def _health_record(event_type: str, state_after: str):
             "diagnostic_payload": {
                 "detail": "Contactless reader state",
                 "reason_code": "READER_STATE",
+                "reader_id": "car-main",
+                "reader_label": "Main in Car",
+                "location_id": "vehicle.cabin",
                 "read_only": True,
             },
             "receipt_id": "nfc-health-receipt-%s" % event_type,
