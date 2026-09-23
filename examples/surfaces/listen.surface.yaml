@@ -48,4 +48,5 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary listen skin
+  implementation_status: Retained legacy listening artwork; current conversation and microphone evidence use the Home, Written Conversation, Audio, and Backroom paths
+  navigation_status: deferred-unrouted
