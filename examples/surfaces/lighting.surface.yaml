@@ -40,7 +40,20 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
-widgets: []
+widgets:
+- widget_id: lighting_context_status
+  coordinate_space: normalized
+  rect:
+  - 0.675
+  - 0.68
+  - 0.30
+  - 0.25
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Live read-only ambient-light context; fixture observation and control remain unbound
 transitions:
   enter: fade
   exit: fade
@@ -48,4 +61,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary lighting skin
+  implementation_status: lighting surface with genuine ambient-light context; starlight, cabin accents, scenes, brightness, and physical lighting control remain unbound
