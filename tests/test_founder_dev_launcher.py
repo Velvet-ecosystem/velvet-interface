@@ -62,7 +62,7 @@ class FounderDevLauncherTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             output = log.read_text(encoding="utf-8")
             self.assertIn(
-                "args=-m velvet_interface.founder_surface_launcher --width 1152 --height 648",
+                "args=examples/founder_surface_window.py --width 1152 --height 648",
                 output,
             )
             self.assertIn("boot=%s" % (dev / "first-boot-snapshot.json"), output)
@@ -103,6 +103,7 @@ class FounderDevLauncherTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             output = log.read_text(encoding="utf-8")
+            self.assertIn("args=examples/founder_surface_window.py", output)
             self.assertIn("boot=%s" % boot, output)
             self.assertIn("socket=%s" % socket, output)
             self.assertIn("interface_dev=false", output)
