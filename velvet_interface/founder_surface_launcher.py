@@ -212,6 +212,18 @@ def _env_true(name: str) -> bool:
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _owner_maintenance_unlocked() -> bool:
+    """Development presentation seam for the hidden owner-maintenance room.
+
+    Both pieces of evidence are required. Neither one alone opens the room, and
+    this presentation gate grants no Court, execution, or physical authority.
+    """
+
+    return _env_true("VELVET_OWNER_PRESENT") and _env_true(
+        "VELVET_MAINTENANCE_UNLOCKED"
+    )
+
+
 def _resolve_surface_selection(args: argparse.Namespace) -> Tuple[Path, str]:
     """Resolve presentation content without coupling the launcher to a body type."""
 
@@ -367,12 +379,21 @@ def main(argv: Optional[List[str]] = None) -> int:
             surface_height=args.height,
         )
 
+    def open_velvets_legs(_event_data) -> None:
+        if _owner_maintenance_unlocked():
+            router.navigate("velvets_legs")
+
     for name in sorted(scene_documents):
         scene = ImageScene(scene_documents[name])
         if name == "vehicle":
             scene.register_event_handler(
                 "vehicle.electronics.selected",
                 open_body_nodes_touch_list,
+            )
+        if name == "backroom":
+            scene.register_event_handler(
+                "backroom.hidden_owner_maintenance.selected",
+                open_velvets_legs,
             )
         router.register_scene(scene)
 
@@ -485,6 +506,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                     "vehicle.electronics.selected",
                     open_body_nodes_touch_list,
                 )
+            if result.surface_name == "backroom":
+                promoted_scene.register_event_handler(
+                    "backroom.hidden_owner_maintenance.selected",
+                    open_velvets_legs,
+                )
             router.register_scene(promoted_scene)
             router.navigate(result.surface_name)
 
@@ -498,9 +524,26 @@ def main(argv: Optional[List[str]] = None) -> int:
         studio_scene.bind_router(router)
         router.register_scene(studio_scene)
 
+    from velvet_interface.scenes.velvets_legs_scene import VelvetsLegsScene
+
+    velvets_legs_scene = VelvetsLegsScene(
+        access_provider=_owner_maintenance_unlocked,
+        physical_control_disabled_provider=lambda: _env_true(
+            "VELVET_PHYSICAL_CONTROL_DISABLED"
+        ),
+    )
+    velvets_legs_scene.bind_router(router)
+    router.register_scene(velvets_legs_scene)
+
     initial = requested_initial
     if initial not in router.list_scenes():
-        built_in_tools = {"surface_studio", "written_conversation", "character_foundry", "eleanor_engineering"}
+        built_in_tools = {
+            "surface_studio",
+            "written_conversation",
+            "character_foundry",
+            "eleanor_engineering",
+            "velvets_legs",
+        }
         ordinary = [
             name for name in sorted(router.list_scenes()) if name not in built_in_tools
         ]
