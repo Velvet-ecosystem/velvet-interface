@@ -4,13 +4,16 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Sequence
+
 
 class EleanorUnavailable(RuntimeError):
     """Raised when the canonical Eleanor CLI cannot provide presentation data."""
 
+
 class EleanorBridge:
     """Read-only adapter over the canonical Eleanor CLI."""
+
     def __init__(self, executable: Path, manifest: Path, timeout_seconds: float = 5.0) -> None:
         self.executable = Path(executable).expanduser()
         self.manifest = Path(manifest).expanduser()
@@ -18,18 +21,33 @@ class EleanorBridge:
         if self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
 
-    def _run_json(self, command: str) -> Dict[str, Any]:
-        if command not in {"validate", "coverage"}:
+    def _run_json(self, command: str, extra_args: Sequence[str] = ()) -> Dict[str, Any]:
+        allowed = {
+            "validate": {"--verify-artifacts"},
+            "coverage": set(),
+        }
+        if command not in allowed:
             raise ValueError("Eleanor bridge command is not allow-listed")
+        supplied = tuple(str(value) for value in extra_args)
+        if any(value not in allowed[command] for value in supplied):
+            raise ValueError("Eleanor bridge option is not allow-listed")
+        if len(set(supplied)) != len(supplied):
+            raise ValueError("Eleanor bridge option must not be repeated")
         if not self.executable.is_file():
             raise EleanorUnavailable("Eleanor executable not found: %s" % self.executable)
         if not self.manifest.is_file():
             raise EleanorUnavailable("Eleanor project manifest not found: %s" % self.manifest)
+        argv = [str(self.executable), command, str(self.manifest)]
+        argv.extend(supplied)
+        argv.append("--json")
         try:
             result = subprocess.run(
-                [str(self.executable), command, str(self.manifest), "--json"],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                timeout=self.timeout_seconds, check=False,
+                argv,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=self.timeout_seconds,
+                check=False,
             )
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise EleanorUnavailable("Eleanor command unavailable: %s" % exc) from exc
@@ -44,6 +62,11 @@ class EleanorBridge:
 
     def validate(self) -> Dict[str, Any]:
         return self._run_json("validate")
+
+    def validate_artifacts(self) -> Dict[str, Any]:
+        """Re-read registered engineering artifacts without mutating them."""
+
+        return self._run_json("validate", ("--verify-artifacts",))
 
     def coverage(self) -> Dict[str, Any]:
         return self._run_json("coverage")

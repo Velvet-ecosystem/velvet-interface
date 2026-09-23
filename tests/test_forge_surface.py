@@ -50,7 +50,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.150174, 0.529321],
                     [0.039062, 0.533951],
                 ],
-                "action": "navigate:forge_workspace",
+                "action": "navigate:engineering_design",
             },
             "module_lab": {
                 "polygon": [
@@ -59,7 +59,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.989583, 0.523148],
                     [0.847222, 0.516975],
                 ],
-                "action": "navigate:forge_workspace",
+                "action": "navigate:module_lab",
             },
             "test_bench": {
                 "polygon": [
@@ -68,7 +68,7 @@ class ForgeSurfaceTests(unittest.TestCase):
                     [0.963542, 0.740741],
                     [0.909722, 0.703704],
                 ],
-                "action": "navigate:forge_workspace",
+                "action": "navigate:test_bench",
             },
             "surface_studio": {
                 "polygon": [
@@ -91,11 +91,31 @@ class ForgeSurfaceTests(unittest.TestCase):
         self.assertEqual(points["return_home"]["action"], "navigate:founder_home")
         self.assertEqual(points["emergency"]["action"], "navigate:emergency")
         self.assertEqual(document["metadata"]["physical_control"], "disabled")
-        self.assertIn("Six Forge workstations mapped", document["metadata"]["implementation_status"])
-        placeholder = yaml.safe_load(Path("examples/surfaces/forge_workspace.surface.yaml").read_text(encoding="utf-8"))
-        self.assertEqual(placeholder["name"], "forge_workspace")
-        self.assertEqual(placeholder["metadata"]["physical_control"], "disabled")
-        self.assertEqual(placeholder["press_points"][0]["action"], "navigate:forge")
+        self.assertIn("dedicated Founder surface", document["metadata"]["implementation_status"])
+
+    def test_live_scroll_workspaces_are_presentation_only(self):
+        expected_widgets = {
+            "engineering_design": "forge_engineering_design",
+            "module_lab": "forge_module_lab",
+            "test_bench": "forge_test_bench",
+        }
+        for scene_name, widget_id in expected_widgets.items():
+            with self.subTest(scene=scene_name):
+                document = yaml.safe_load(
+                    Path("examples/surfaces/%s.surface.yaml" % scene_name).read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(document["name"], scene_name)
+                self.assertEqual(document["background"]["image"], "../assets/workspace_scroll.png")
+                self.assertEqual(document["metadata"]["posture"], "presentation-only")
+                self.assertEqual(document["metadata"]["physical_control"], "disabled")
+                self.assertEqual(document["metadata"]["authority"], "none")
+                self.assertEqual(document["widgets"][0]["widget_id"], widget_id)
+                self.assertEqual(document["widgets"][0]["rect"], [0.0, 0.0, 1.0, 1.0])
+                points = {point["id"]: point for point in document["press_points"]}
+                self.assertEqual(points["return_forge"]["action"], "navigate:forge")
+                self.assertEqual(points["emergency"]["action"], "navigate:emergency")
 
     def test_reusable_workspace_scroll_asset_exists(self):
         self.assertTrue(Path("examples/assets/workspace_scroll.png").is_file())
