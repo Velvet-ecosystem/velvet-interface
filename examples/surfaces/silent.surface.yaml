@@ -48,4 +48,5 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary silent skin
+  implementation_status: Retained legacy silent artwork; final mute and silent-listening behavior belongs to a reviewed Runtime/audio intent path rather than a decorative scene
+  navigation_status: deferred-unrouted
