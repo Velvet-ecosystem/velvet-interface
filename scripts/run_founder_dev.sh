@@ -29,4 +29,4 @@ if [[ ! -f "${VELVET_BOOT_SNAPSHOT_PATH}" ]]; then
 fi
 
 cd "${REPO_ROOT}"
-exec "${PYTHON_BIN}" -m velvet_interface.founder_surface_launcher "$@"
+exec "${PYTHON_BIN}" examples/founder_surface_window.py "$@"
