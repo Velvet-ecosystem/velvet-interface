@@ -6,7 +6,7 @@ base_resolution:
 background:
   image: ../assets/workspace_scroll.png
   fit: cover
-  alt_text: Temporary Velvet Forge workspace
+  alt_text: Retained Velvet Forge compatibility workspace
 press_points:
 - id: return_forge
   coordinate_space: normalized
@@ -48,5 +48,6 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  purpose: Safe temporary landing surface for Forge workstations whose dedicated Founder UI is not yet implemented
-  implementation_status: Temporary; replace per-workstation as dedicated interfaces become available
+  purpose: Compatibility landing surface retained for lineage and old links after dedicated Forge workspaces became available
+  implementation_status: Retained compatibility fallback; current Forge touchpoints target dedicated workspaces
+  navigation_status: compatibility-unrouted
