@@ -15,6 +15,12 @@ nfc_status
 
 Each card consumes the same bounded evidence source it already uses elsewhere in Founder. The Backroom does not acquire hardware handles, duplicate Runtime logic, or synthesize healthy values when evidence is missing.
 
+## Front Room entry
+
+The Front Room again preserves the historical discreet Backroom seam. The current software geometry is a provisional narrow right-edge target and is deliberately marked `provisional-until-founder-mapping` so the next physical Founder pass can bind it to the actual seam/keyhole detail in the artwork.
+
+The Front Room entry navigates only to the read-only Backroom surface. It does not enter the deeper owner-maintenance room and grants no new authority. Backroom evidence cards remain visible only in their existing owner/service presentation modes, so a guest presentation does not gain technical evidence merely by reaching the room.
+
 ## Velvet's Legs hidden maintenance layer
 
 Backroom also preserves the historical owner-only maintenance path known as **Velvet's Legs**.
@@ -54,6 +60,8 @@ This is intentional. The official Backroom design eventually calls for safe rest
 ## Placement
 
 The six cards are arranged as a diagnostic wall in two rows. Their placement is suitable for software review and may be tuned during the next physical Founder layout pass without changing the evidence contracts.
+
+The Front Room Backroom seam and the concealed Backroom-to-Legs entrance are both provisional geometry. Board-time placement should move either target to the correct artwork feature without changing the routing or access contracts.
 
 ## Contactless status
 
