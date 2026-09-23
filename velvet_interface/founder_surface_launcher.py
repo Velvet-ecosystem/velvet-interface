@@ -276,6 +276,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     from velvet_interface.surfaces.pyqt.qt_surface import QtSurface
     from velvet_interface.surfaces.pyqt.seat_presence_status_widget import QtSeatPresenceStatusWidget
     from velvet_interface.surfaces.pyqt.vehicle_power_status_widget import QtVehiclePowerStatusWidget
+    from velvet_interface.surfaces.pyqt.velvet_presence_widget import QtVelvetPresenceWidget
 
     surfaces_path.mkdir(parents=True, exist_ok=True)
     scene_loader = YAMLSceneLoader()
@@ -299,6 +300,11 @@ def main(argv: Optional[List[str]] = None) -> int:
             return QtFounderBodyStatusWidget(
                 boot_snapshot=args.boot_snapshot,
                 body_snapshot=args.body_snapshot,
+            )
+        if widget_id == "velvet_presence":
+            return QtVelvetPresenceWidget(
+                boot_snapshot=args.boot_snapshot,
+                conversation_socket=args.conversation_socket,
             )
         if widget_id == "gnss_status":
             return QtGnssStatusWidget(body_snapshot=args.body_snapshot)
@@ -446,6 +452,23 @@ def main(argv: Optional[List[str]] = None) -> int:
             eleanor_scene = None
             print("Eleanor Engineering surface unavailable: %s" % exc, file=sys.stderr)
 
+    library_scene = None
+    try:
+        from velvet_interface.library_reader_registration import register_library_reader
+
+        def library_access_provider() -> bool:
+            return _env_true("VELVET_OWNER_PRESENT") or _env_true(
+                "VELVET_MAINTENANCE_UNLOCKED"
+            )
+
+        library_scene = register_library_reader(
+            router,
+            access_provider=library_access_provider,
+        )
+    except (ImportError, ValueError, OSError) as exc:
+        library_scene = None
+        print("Library Reader surface unavailable: %s" % exc, file=sys.stderr)
+
     studio_scene = None
     if not args.disable_surface_studio:
         workspace = SurfaceWorkspace(
@@ -500,7 +523,13 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     initial = requested_initial
     if initial not in router.list_scenes():
-        built_in_tools = {"surface_studio", "written_conversation", "character_foundry", "eleanor_engineering"}
+        built_in_tools = {
+            "surface_studio",
+            "written_conversation",
+            "character_foundry",
+            "eleanor_engineering",
+            "library_reader",
+        }
         ordinary = [
             name for name in sorted(router.list_scenes()) if name not in built_in_tools
         ]
@@ -512,6 +541,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             initial = "written_conversation"
         elif foundry_scene is not None:
             initial = "character_foundry"
+        elif library_scene is not None:
+            initial = "library_reader"
         else:
             print("No available Founder scenes", file=sys.stderr)
             return 2
