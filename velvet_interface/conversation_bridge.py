@@ -1,16 +1,30 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Narrow standalone client for Runtime's local conversation Unix socket."""
+
 from __future__ import annotations
+
 import json
 import socket
 import struct
+import uuid
 from pathlib import Path
 from typing import Any, Mapping, Union
 
-_MAX_FRAME_BYTES = 1024 * 1024
+_PROTOCOL = "velvet.runtime.unix.v1"
+_MAX_FRAME_BYTES = 256 * 1024
+_TRANSPORT_FLAGS = {
+    "transport_only": True,
+    "canonical": False,
+    "grants_authority": False,
+    "grants_execution": False,
+    "grants_actuation": False,
+    "authority": "none",
+}
+
 
 class ConversationBridgeError(RuntimeError):
     """The local Runtime conversation endpoint rejected or failed a request."""
+
 
 class UnixConversationBridge:
     """Interface-owned client for Runtime's narrow submit_turn contract."""
@@ -26,12 +40,26 @@ class UnixConversationBridge:
             raise ValueError("conversation text must be non-empty")
         if modality not in {"text", "speech_transcript"}:
             raise ValueError("unsupported conversation modality")
-        request = {"operation": "submit_turn", "payload": {"text": text.strip(), "modality": modality}}
+
+        request_id = uuid.uuid4().hex
+        request = {
+            "protocol": _PROTOCOL,
+            "kind": "request",
+            "request_id": request_id,
+            "operation": "submit_turn",
+            "payload": {"text": text.strip(), "modality": modality},
+            **_TRANSPORT_FLAGS,
+        }
         response = self._call(request)
-        if not isinstance(response, Mapping):
-            raise ConversationBridgeError("conversation response must be a mapping")
+        _validate_response_envelope(response, request_id)
+
         if response.get("ok") is not True:
-            raise ConversationBridgeError(str(response.get("error") or "conversation request failed"))
+            error_type = response.get("error_type")
+            error = str(response.get("error") or "conversation request failed")
+            if isinstance(error_type, str) and error_type.strip():
+                error = "%s: %s" % (error_type.strip(), error)
+            raise ConversationBridgeError(error)
+
         result = response.get("result")
         if not isinstance(result, Mapping):
             raise ConversationBridgeError("conversation result must be a mapping")
@@ -60,6 +88,7 @@ class UnixConversationBridge:
             raise ConversationBridgeError("conversation envelope must be a mapping")
         return value
 
+
 def _recv_exact(client: socket.socket, count: int) -> bytes:
     chunks = []
     remaining = count
@@ -70,6 +99,23 @@ def _recv_exact(client: socket.socket, count: int) -> bytes:
         chunks.append(chunk)
         remaining -= len(chunk)
     return b"".join(chunks)
+
+
+def _validate_response_envelope(response: Mapping[str, Any], request_id: str) -> None:
+    if response.get("protocol") != _PROTOCOL:
+        raise ConversationBridgeError("conversation response protocol is invalid")
+    if response.get("kind") != "response":
+        raise ConversationBridgeError("conversation response kind is invalid")
+    if response.get("request_id") != request_id:
+        raise ConversationBridgeError("conversation response request_id is invalid")
+    for key, expected in _TRANSPORT_FLAGS.items():
+        if response.get(key) != expected:
+            raise ConversationBridgeError(
+                "conversation response transport flag %s is invalid" % key
+            )
+    if not isinstance(response.get("ok"), bool):
+        raise ConversationBridgeError("conversation response ok flag is invalid")
+
 
 def _validate_result(result: Mapping[str, Any]) -> Mapping[str, Any]:
     for key in ("conversation_id", "turn_id", "text", "generator"):

@@ -10,6 +10,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LAUNCHER = REPO_ROOT / "scripts" / "run_founder_dev.sh"
+FOUNDER_WRAPPER = REPO_ROOT / "examples" / "founder_surface_window.py"
 
 
 @unittest.skipUnless(sys.platform != "win32", "launcher requires a POSIX shell")
@@ -62,7 +63,7 @@ class FounderDevLauncherTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             output = log.read_text(encoding="utf-8")
             self.assertIn(
-                "args=-m velvet_interface.founder_surface_launcher --width 1152 --height 648",
+                "args=%s --width 1152 --height 648" % FOUNDER_WRAPPER,
                 output,
             )
             self.assertIn("boot=%s" % (dev / "first-boot-snapshot.json"), output)
@@ -103,6 +104,7 @@ class FounderDevLauncherTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             output = log.read_text(encoding="utf-8")
+            self.assertIn("args=%s" % FOUNDER_WRAPPER, output)
             self.assertIn("boot=%s" % boot, output)
             self.assertIn("socket=%s" % socket, output)
             self.assertIn("interface_dev=false", output)
