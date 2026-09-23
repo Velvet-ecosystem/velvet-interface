@@ -40,6 +40,26 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
+- id: hidden_owner_maintenance
+  coordinate_space: normalized
+  polygon:
+  - - 0.82
+    - 0.84
+  - - 0.98
+    - 0.84
+  - - 0.98
+    - 0.98
+  - - 0.82
+    - 0.98
+  action: emit:backroom.hidden_owner_maintenance.selected
+  label: Hidden owner maintenance entrance
+  accessibility_label: Protected owner maintenance entrance
+  z_index: 9
+  enabled: true
+  metadata:
+    visibility: concealed
+    gate: owner-plus-maintenance
+    placement_status: provisional-until-founder-mapping
 widgets:
 - widget_id: founder_body_status
   coordinate_space: normalized
@@ -126,4 +146,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: live read-only diagnostic wall using existing trusted Founder evidence widgets; no maintenance or hardware action is exposed
+  implementation_status: live read-only diagnostic wall with concealed owner-maintenance entrance; hidden route remains inert unless both owner presence and maintenance unlock are present
