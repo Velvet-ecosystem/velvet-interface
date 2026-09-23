@@ -379,9 +379,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             surface_height=args.height,
         )
 
-    def open_velvets_legs(_event_data) -> None:
+    def open_owner_maintenance(_event_data) -> None:
         if _owner_maintenance_unlocked():
-            router.navigate("velvets_legs")
+            router.navigate("owner_maintenance")
 
     for name in sorted(scene_documents):
         scene = ImageScene(scene_documents[name])
@@ -393,7 +393,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         if name == "backroom":
             scene.register_event_handler(
                 "backroom.hidden_owner_maintenance.selected",
-                open_velvets_legs,
+                open_owner_maintenance,
             )
         router.register_scene(scene)
 
@@ -509,7 +509,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             if result.surface_name == "backroom":
                 promoted_scene.register_event_handler(
                     "backroom.hidden_owner_maintenance.selected",
-                    open_velvets_legs,
+                    open_owner_maintenance,
                 )
             router.register_scene(promoted_scene)
             router.navigate(result.surface_name)
@@ -524,16 +524,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         studio_scene.bind_router(router)
         router.register_scene(studio_scene)
 
-    from velvet_interface.scenes.velvets_legs_scene import VelvetsLegsScene
+    from velvet_interface.scenes.owner_maintenance_scene import OwnerMaintenanceScene
 
-    velvets_legs_scene = VelvetsLegsScene(
+    owner_maintenance_title = os.environ.get(
+        "VELVET_OWNER_MAINTENANCE_TITLE",
+        "OWNER MAINTENANCE",
+    ).strip() or "OWNER MAINTENANCE"
+    owner_maintenance_scene = OwnerMaintenanceScene(
         access_provider=_owner_maintenance_unlocked,
         physical_control_disabled_provider=lambda: _env_true(
             "VELVET_PHYSICAL_CONTROL_DISABLED"
         ),
+        display_title=owner_maintenance_title,
     )
-    velvets_legs_scene.bind_router(router)
-    router.register_scene(velvets_legs_scene)
+    owner_maintenance_scene.bind_router(router)
+    router.register_scene(owner_maintenance_scene)
 
     initial = requested_initial
     if initial not in router.list_scenes():
@@ -542,7 +547,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "written_conversation",
             "character_foundry",
             "eleanor_engineering",
-            "velvets_legs",
+            "owner_maintenance",
         }
         ordinary = [
             name for name in sorted(router.list_scenes()) if name not in built_in_tools
