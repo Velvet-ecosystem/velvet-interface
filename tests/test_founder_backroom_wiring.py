@@ -7,6 +7,21 @@ from velvet_interface.scene_system.yaml_loader import YAMLSceneLoader
 
 
 class FounderBackroomWiringTests(unittest.TestCase):
+    def test_front_room_preserves_backroom_seam(self):
+        root = Path(__file__).resolve().parents[1]
+        scene = YAMLSceneLoader().load(
+            str(root / "examples/surfaces/founder_home.surface.yaml"),
+            require_background=True,
+        )
+        entry = next(region for region in scene["regions"] if region["name"] == "backroom")
+        self.assertEqual(entry["action"], "navigate:backroom")
+        self.assertEqual(entry["metadata"]["visibility"], "discreet")
+        self.assertEqual(
+            entry["metadata"]["placement_status"],
+            "provisional-until-founder-mapping",
+        )
+        self.assertEqual(scene["metadata"]["backroom_entry"], "provisional-right-edge-seam")
+
     def test_backroom_uses_existing_read_only_diagnostic_widgets(self):
         root = Path(__file__).resolve().parents[1]
         scene = YAMLSceneLoader().load(
