@@ -57,7 +57,7 @@ class FounderBackroomWiringTests(unittest.TestCase):
                 "emit:backroom.hidden_owner_maintenance.selected",
             },
         )
-        self.assertNotIn("navigate:velvets_legs", actions)
+        self.assertNotIn("navigate:owner_maintenance", actions)
 
         hidden = next(
             region for region in scene["regions"] if region["name"] == "hidden_owner_maintenance"
