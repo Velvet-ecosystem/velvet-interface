@@ -47,6 +47,8 @@ physical_control: disabled
 
 Its ordinary visible press points navigate only to Home and Emergency. The concealed owner-maintenance point emits a local presentation event and cannot itself navigate, unlock maintenance, grant Court authority, invoke shell commands, drive relays, transmit CAN, or actuate hardware.
 
+Velvet's Legs is also presentation-only in this slice. Opening the hidden room does not expand execution scope. If `VELVET_PHYSICAL_CONTROL_DISABLED` is not positively present, the room reports that disabled posture as unproven rather than inferring safety.
+
 This is intentional. The official Backroom design eventually calls for safe restart/update and deeper diagnostics, but those actions must arrive through reviewed authority-bearing contracts rather than by teaching an image surface to execute them directly.
 
 ## Placement
