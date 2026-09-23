@@ -21,11 +21,11 @@ The Front Room again preserves the historical discreet Backroom seam. The curren
 
 The Front Room entry navigates only to the read-only Backroom surface. It does not enter the deeper owner-maintenance room and grants no new authority. Backroom evidence cards remain visible only in their existing owner/service presentation modes, so a guest presentation does not gain technical evidence merely by reaching the room.
 
-## Velvet's Legs hidden maintenance layer
+## Protected owner-maintenance layer
 
-Backroom also preserves the historical owner-only maintenance path known as **Velvet's Legs**.
+Backroom also preserves a deeper owner-only maintenance path.
 
-The visible Backroom remains the diagnostic room. The deeper route is intentionally concealed in the artwork and uses an `emit:` press point rather than direct navigation. Founder application code decides whether that event may open the built-in `velvets_legs` scene.
+The visible Backroom remains the diagnostic room. The deeper route is intentionally concealed in the artwork and uses an `emit:` press point rather than direct navigation. Founder application code decides whether that event may open the built-in `owner_maintenance` scene.
 
 The current development presentation seam requires both:
 
@@ -38,7 +38,9 @@ One without the other is insufficient. When either input is absent or false, pre
 
 These environment values are temporary Founder integration evidence. They do not create identity, Court authority, execution authority, or physical control. The final path should consume the reviewed owner/presence and maintenance-capability contracts when those replace the development seam.
 
-Surface Studio is the first live tool exposed inside Velvet's Legs. It retains its own maintenance gate and promotion requirements. Learning Mode, White Room, Dream Layer, and deeper owner maintenance tools remain separate reviewed work rather than placeholders pretending to be operational.
+Surface Studio is the first live tool exposed inside the protected owner-maintenance layer. It retains its own maintenance gate and promotion requirements. Learning Mode, White Room, Dream Layer, and deeper owner maintenance tools remain separate reviewed work rather than placeholders pretending to be operational.
+
+The public default scene title is `OWNER MAINTENANCE`. Deployments may supply a local presentation-only title through `VELVET_OWNER_MAINTENANCE_TITLE` without changing the public contract, scene ID, access gate, or authority model.
 
 The current concealed polygon is provisional and must be mapped against the real Founder Backroom artwork during the next physical placement pass. Moving that target does not change the access contract.
 
@@ -53,7 +55,7 @@ physical_control: disabled
 
 Its ordinary visible press points navigate only to Home and Emergency. The concealed owner-maintenance point emits a local presentation event and cannot itself navigate, unlock maintenance, grant Court authority, invoke shell commands, drive relays, transmit CAN, or actuate hardware.
 
-Velvet's Legs is also presentation-only in this slice. Opening the hidden room does not expand execution scope. If `VELVET_PHYSICAL_CONTROL_DISABLED` is not positively present, the room reports that disabled posture as unproven rather than inferring safety.
+The protected owner-maintenance scene is also presentation-only in this slice. Opening it does not expand execution scope. If `VELVET_PHYSICAL_CONTROL_DISABLED` is not positively present, the room reports that disabled posture as unproven rather than inferring safety.
 
 This is intentional. The official Backroom design eventually calls for safe restart/update and deeper diagnostics, but those actions must arrive through reviewed authority-bearing contracts rather than by teaching an image surface to execute them directly.
 
@@ -61,7 +63,7 @@ This is intentional. The official Backroom design eventually calls for safe rest
 
 The six cards are arranged as a diagnostic wall in two rows. Their placement is suitable for software review and may be tuned during the next physical Founder layout pass without changing the evidence contracts.
 
-The Front Room Backroom seam and the concealed Backroom-to-Legs entrance are both provisional geometry. Board-time placement should move either target to the correct artwork feature without changing the routing or access contracts.
+The Front Room Backroom seam and the concealed Backroom-to-owner-maintenance entrance are both provisional geometry. Board-time placement should move either target to the correct artwork feature without changing the routing or access contracts.
 
 ## Contactless status
 
