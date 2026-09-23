@@ -136,6 +136,26 @@ press_points:
   accessibility_label: Open the Forge workspace
   z_index: 10
   enabled: true
+- id: backroom
+  coordinate_space: normalized
+  polygon:
+  - - 0.95
+    - 0.18
+  - - 0.995
+    - 0.18
+  - - 0.995
+    - 0.70
+  - - 0.95
+    - 0.70
+  action: navigate:backroom
+  label: Backroom Seam
+  accessibility_label: Open the Backroom diagnostics surface
+  z_index: 9
+  enabled: true
+  metadata:
+    visibility: discreet
+    placement_status: provisional-until-founder-mapping
+    purpose: Front Room path to read-only Backroom diagnostics
 - id: emergency
   coordinate_space: normalized
   polygon:
@@ -188,3 +208,4 @@ metadata:
   posture: presentation-only
   physical_control: disabled
   conversation_entry: velvet_presence
+  backroom_entry: provisional-right-edge-seam
