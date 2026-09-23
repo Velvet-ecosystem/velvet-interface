@@ -10,8 +10,8 @@ TRUSTED_BUILT_IN_SCENES = {
     "character_foundry",
     "eleanor_engineering",
     "library_reader",
+    "owner_maintenance",
     "surface_studio",
-    "velvets_legs",
     "written_conversation",
 }
 
@@ -64,7 +64,7 @@ class FounderSurfaceReachabilityTests(unittest.TestCase):
             )
             self.assertFalse(documents[scene_name]["metadata"]["physical_control"])
 
-    def test_backroom_is_reachable_but_legs_is_not_a_manifest_route(self):
+    def test_backroom_is_reachable_but_owner_maintenance_is_not_a_manifest_route(self):
         documents = self._load()
         home_targets = {
             region["action"].split(":", 1)[1]
@@ -78,7 +78,7 @@ class FounderSurfaceReachabilityTests(unittest.TestCase):
             for scene in documents.values()
             for region in scene["regions"]
         }
-        self.assertNotIn("navigate:velvets_legs", all_actions)
+        self.assertNotIn("navigate:owner_maintenance", all_actions)
         self.assertIn(
             "emit:backroom.hidden_owner_maintenance.selected",
             all_actions,
