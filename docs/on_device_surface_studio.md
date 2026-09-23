@@ -167,10 +167,10 @@ expose the editor at all.
 
 ## Recommended operating doctrine
 
-Surface Studio belongs behind Velvet's hidden Maintenance entrance, historically
-represented by the candle/Legs path. Opening the studio may be allowed while
-stationary for draft work. Promoting an active surface should remain owner-only,
-stationary-only, physical-control-disabled, and receipted.
+Surface Studio belongs behind the protected owner-maintenance entrance. Opening
+the studio may be allowed while stationary for draft work. Promoting an active
+surface should remain owner-only, stationary-only, physical-control-disabled,
+and receipted.
 
 A surface can be beautiful, strange, theatrical, or newly forged at midnight.
 Its geometry still does not become authority.
