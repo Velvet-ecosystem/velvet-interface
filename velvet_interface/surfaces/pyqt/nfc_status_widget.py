@@ -52,7 +52,17 @@ class QtNfcStatusWidget(QWidget):
         grid.setHorizontalSpacing(12)
         grid.setVerticalSpacing(2)
         for row, label_text in enumerate(
-            ("State", "Reader", "Factor", "Label", "Role", "Freshness", "Confidence")
+            (
+                "State",
+                "Reader",
+                "Reader State",
+                "Location",
+                "Factor",
+                "Label",
+                "Role",
+                "Freshness",
+                "Confidence",
+            )
         ):
             label = QLabel(label_text)
             label.setObjectName("label")
@@ -80,7 +90,11 @@ class QtNfcStatusWidget(QWidget):
     def refresh(self) -> None:
         status = load_nfc_live_status(self.body_snapshot)
         self._values["State"].setText(status.state)
-        self._values["Reader"].setText(status.reader_state)
+        self._values["Reader"].setText(
+            status.reader_label or status.reader_id or "-"
+        )
+        self._values["Reader State"].setText(status.reader_state)
+        self._values["Location"].setText(status.location_id or "-")
         self._values["Factor"].setText(status.match_state)
         self._values["Label"].setText(status.label or "-")
         self._values["Role"].setText(status.role_hint or "-")

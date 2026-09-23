@@ -33,6 +33,9 @@ class NfcLiveStatus:
     match_state: str
     freshness: str
     reader_state: str
+    reader_id: Optional[str] = None
+    reader_label: Optional[str] = None
+    location_id: Optional[str] = None
     label: Optional[str] = None
     principal_ref: Optional[str] = None
     role_hint: Optional[str] = None
@@ -57,7 +60,7 @@ def load_nfc_live_status(
                 item
                 for item in body.sensors
                 if item.sensor_type == "contactless_token_presentation"
-                or item.module_id == "contactless-token-main"
+                or _is_contactless_module(item.module_id)
             ),
             None,
         )
@@ -65,12 +68,18 @@ def load_nfc_live_status(
             (
                 item
                 for item in body.health_events
-                if item.module_id == "contactless-token-main"
+                if (
+                    sensor is not None and item.module_id == sensor.module_id
+                )
+                or (
+                    sensor is None and _is_contactless_module(item.module_id)
+                )
             ),
             None,
         )
 
         if sensor is None:
+            reader_id, reader_label, location_id = _health_reader_metadata(health)
             if health is not None and health.state_after == "FAILED":
                 detail = str(
                     health.diagnostic_payload.get(
@@ -83,6 +92,9 @@ def load_nfc_live_status(
                     match_state="NO PRESENTATION",
                     freshness="unknown",
                     reader_state="FAILED",
+                    reader_id=reader_id,
+                    reader_label=reader_label,
+                    location_id=location_id,
                     receipt_id=health.receipt_id,
                     message=detail,
                 )
@@ -93,6 +105,9 @@ def load_nfc_live_status(
                     match_state="NO PRESENTATION",
                     freshness="none",
                     reader_state="ONLINE",
+                    reader_id=reader_id,
+                    reader_label=reader_label,
+                    location_id=location_id,
                     receipt_id=health.receipt_id,
                     message="Reader ready; no fresh contactless factor",
                 )
@@ -155,6 +170,9 @@ def load_nfc_live_status(
             match_state=match_state,
             freshness=freshness,
             reader_state=reader_state,
+            reader_id=_optional_text(payload.get("reader_id")),
+            reader_label=_optional_text(payload.get("reader_label")),
+            location_id=_optional_text(payload.get("location_id")),
             label=label,
             principal_ref=principal_ref,
             role_hint=role_hint,
@@ -173,6 +191,23 @@ def load_nfc_live_status(
         freshness="unknown",
         reader_state="UNKNOWN",
         message=message,
+    )
+
+
+def _is_contactless_module(module_id: str) -> bool:
+    return module_id == "contactless-token-main" or module_id.startswith(
+        "contactless-token-"
+    )
+
+
+def _health_reader_metadata(health):
+    if health is None:
+        return None, None, None
+    diagnostic = health.diagnostic_payload
+    return (
+        _optional_text(diagnostic.get("reader_id")),
+        _optional_text(diagnostic.get("reader_label")),
+        _optional_text(diagnostic.get("location_id")),
     )
 
 
