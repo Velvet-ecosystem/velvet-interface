@@ -15,6 +15,27 @@ nfc_status
 
 Each card consumes the same bounded evidence source it already uses elsewhere in Founder. The Backroom does not acquire hardware handles, duplicate Runtime logic, or synthesize healthy values when evidence is missing.
 
+## Velvet's Legs hidden maintenance layer
+
+Backroom also preserves the historical owner-only maintenance path known as **Velvet's Legs**.
+
+The visible Backroom remains the diagnostic room. The deeper route is intentionally concealed in the artwork and uses an `emit:` press point rather than direct navigation. Founder application code decides whether that event may open the built-in `velvets_legs` scene.
+
+The current development presentation seam requires both:
+
+```text
+VELVET_OWNER_PRESENT=true
+VELVET_MAINTENANCE_UNLOCKED=true
+```
+
+One without the other is insufficient. When either input is absent or false, pressing the concealed region does nothing and the Backroom remains visually ordinary. Direct navigation to the built-in scene also fails closed to a locked presentation.
+
+These environment values are temporary Founder integration evidence. They do not create identity, Court authority, execution authority, or physical control. The final path should consume the reviewed owner/presence and maintenance-capability contracts when those replace the development seam.
+
+Surface Studio is the first live tool exposed inside Velvet's Legs. It retains its own maintenance gate and promotion requirements. Learning Mode, White Room, Dream Layer, and deeper owner maintenance tools remain separate reviewed work rather than placeholders pretending to be operational.
+
+The current concealed polygon is provisional and must be mapped against the real Founder Backroom artwork during the next physical placement pass. Moving that target does not change the access contract.
+
 ## Authority boundary
 
 The Backroom remains:
@@ -24,7 +45,7 @@ posture: presentation-only
 physical_control: disabled
 ```
 
-Its only press-point actions are navigation to Home and Emergency. It exposes no restart, update, maintenance unlock, Court grant, shell command, relay, CAN, or actuator action in this slice.
+Its ordinary visible press points navigate only to Home and Emergency. The concealed owner-maintenance point emits a local presentation event and cannot itself navigate, unlock maintenance, grant Court authority, invoke shell commands, drive relays, transmit CAN, or actuate hardware.
 
 This is intentional. The official Backroom design eventually calls for safe restart/update and deeper diagnostics, but those actions must arrive through reviewed authority-bearing contracts rather than by teaching an image surface to execute them directly.
 
