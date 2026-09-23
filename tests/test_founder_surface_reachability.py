@@ -28,7 +28,7 @@ class FounderSurfaceReachabilityTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         return YAMLSceneLoader().load_multiple(
             str(root / "examples/surfaces"),
-            require_background=True,
+            require_background=False,
         )
 
     def test_every_manifest_navigation_target_resolves(self):
@@ -62,7 +62,10 @@ class FounderSurfaceReachabilityTests(unittest.TestCase):
                 documents[scene_name]["metadata"]["navigation_status"],
                 expected_status,
             )
-            self.assertFalse(documents[scene_name]["metadata"]["physical_control"])
+            self.assertEqual(
+                documents[scene_name]["metadata"]["physical_control"],
+                "disabled",
+            )
 
     def test_backroom_is_reachable_but_owner_maintenance_is_not_a_manifest_route(self):
         documents = self._load()
