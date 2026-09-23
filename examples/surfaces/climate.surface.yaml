@@ -136,7 +136,20 @@ press_points:
   accessibility_label: Select climate staircase
   z_index: 10
   enabled: true
-widgets: []
+widgets:
+- widget_id: climate_environment_status
+  coordinate_space: normalized
+  rect:
+  - 0.675
+  - 0.68
+  - 0.30
+  - 0.25
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Live read-only Jade environmental evidence from Runtime body state
 transitions:
   enter: fade
   exit: fade
@@ -144,4 +157,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: bench-mapped climate skin
+  implementation_status: bench-mapped climate surface with live read-only environmental evidence; climate actuation remains unbound
