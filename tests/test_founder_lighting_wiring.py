@@ -20,7 +20,7 @@ class FounderLightingWiringTests(unittest.TestCase):
 
         metadata = scene["metadata"]
         self.assertEqual(metadata["posture"], "presentation-only")
-        self.assertFalse(metadata["physical_control"])
+        self.assertEqual(metadata["physical_control"], "disabled")
 
         actions = {region["action"] for region in scene["regions"]}
         self.assertEqual(
