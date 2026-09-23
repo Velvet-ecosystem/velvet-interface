@@ -136,7 +136,33 @@ press_points:
   accessibility_label: Open read-only Velvet nodes and body systems
   z_index: 10
   enabled: true
-widgets: []
+widgets:
+- widget_id: vehicle_power_status
+  coordinate_space: normalized
+  rect:
+  - 0.015
+  - 0.43
+  - 0.215
+  - 0.30
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only vehicle voltage and ignition evidence
+- widget_id: gnss_status
+  coordinate_space: normalized
+  rect:
+  - 0.755
+  - 0.36
+  - 0.23
+  - 0.42
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only GNSS position and fix evidence
 transitions:
   enter: fade
   exit: fade
@@ -144,4 +170,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: bench-mapped vehicle skin
+  implementation_status: Bench-mapped vehicle skin with live read-only power and GNSS evidence overlays

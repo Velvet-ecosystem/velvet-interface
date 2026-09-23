@@ -40,7 +40,20 @@ press_points:
   accessibility_label: Open emergency controls
   z_index: 10
   enabled: true
-widgets: []
+widgets:
+- widget_id: seat_presence_status
+  coordinate_space: normalized
+  rect:
+  - 0.06
+  - 0.55
+  - 0.88
+  - 0.36
+  z_index: 20
+  visible_in:
+  - owner
+  - service
+  metadata:
+    purpose: Read-only aggregate seat, pressure, movement, and heartbeat witness evidence
 transitions:
   enter: fade
   exit: fade
@@ -48,4 +61,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: temporary comfort skin
+  implementation_status: Comfort skin with live read-only seat and person-sense evidence; comfort actuation remains disabled
