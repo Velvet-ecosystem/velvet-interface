@@ -28,18 +28,28 @@ def resolve_builtin_widget(
     """Return one trusted built-in QWidget for an exact allow-listed ID.
 
     Surface manifests cannot name Python modules or commands. They may only
-    request IDs in this registry, and each registered Forge widget is backed by
-    a read-only bridge. Founder may inject already-resolved local source paths;
-    standalone image surfaces fall back to the documented environment/defaults.
+    request IDs in this registry. Founder widgets are backed by read-only
+    evidence seams; manifests never acquire hardware handles or authority.
     """
 
     allowed = {
+        "climate_environment_status",
         "forge_engineering_design",
         "forge_module_lab",
         "forge_test_bench",
     }
     if widget_id not in allowed:
         return None
+
+    if widget_id == "climate_environment_status":
+        from velvet_interface.surfaces.pyqt.climate_status_widget import (
+            QtClimateStatusWidget,
+        )
+
+        body_snapshot = Path(
+            os.environ.get("VELVET_BODY_SNAPSHOT_PATH", "/run/velvet/body-state.json")
+        ).expanduser()
+        return QtClimateStatusWidget(body_snapshot)
 
     from velvet_interface.eleanor_bridge import EleanorBridge
     from velvet_interface.forge_workspace_bridges import (
