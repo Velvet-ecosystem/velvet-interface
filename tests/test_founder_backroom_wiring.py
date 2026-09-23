@@ -36,7 +36,22 @@ class FounderBackroomWiringTests(unittest.TestCase):
         actions = {region["action"] for region in scene["regions"]}
         self.assertEqual(
             actions,
-            {"navigate:founder_home", "navigate:emergency"},
+            {
+                "navigate:founder_home",
+                "navigate:emergency",
+                "emit:backroom.hidden_owner_maintenance.selected",
+            },
+        )
+        self.assertNotIn("navigate:velvets_legs", actions)
+
+        hidden = next(
+            region for region in scene["regions"] if region["name"] == "hidden_owner_maintenance"
+        )
+        self.assertEqual(hidden["metadata"]["visibility"], "concealed")
+        self.assertEqual(hidden["metadata"]["gate"], "owner-plus-maintenance")
+        self.assertEqual(
+            hidden["metadata"]["placement_status"],
+            "provisional-until-founder-mapping",
         )
 
 
