@@ -66,12 +66,12 @@ class CharacterFoundryScene(Scene):
             self._widget = self._render_locked(surface)
             return self._widget
 
-        from velvet_interface.surfaces.pyqt.character_foundry_widget import (
-            QtCharacterFoundryWidget,
+        from velvet_interface.surfaces.pyqt.character_foundry_framed_widget import (
+            QtCharacterFoundryFramedWidget,
         )
 
         width, height = surface.get_dimensions()
-        self._widget = QtCharacterFoundryWidget(
+        self._widget = QtCharacterFoundryFramedWidget(
             bridge=self.bridge,
             target_size=(width, height),
             background_path=self.background_path,
