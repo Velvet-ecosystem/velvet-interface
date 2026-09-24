@@ -3,10 +3,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Callable, Dict, Mapping, Tuple
 
 MAX_WRITTEN_TURN_CHARACTERS = 4096
 MAX_TRANSCRIPT_ENTRIES = 80
+
+# Use the same physically measured parchment writing frame as the three Forge
+# scroll workspaces so Velvet's written conversation belongs to the same room
+# family on the Founder display.
+_SCROLL_CONTENT_RECT = (0.175347, 0.180000, 0.647570, 0.590062)
 
 
 def normalize_conversation_reply(result: Mapping[str, Any]) -> Dict[str, Any]:
@@ -33,6 +39,7 @@ def normalize_conversation_reply(result: Mapping[str, Any]) -> Dict[str, Any]:
 
 try:
     from PyQt5.QtCore import QObject, QRunnable, Qt, QThreadPool, pyqtSignal
+    from PyQt5.QtGui import QPainter, QPixmap
     from PyQt5.QtWidgets import (
         QHBoxLayout,
         QLabel,
@@ -72,7 +79,7 @@ if PYQT_AVAILABLE:
 
 
 class QtWrittenConversationWidget(QWidget):
-    """Full-screen text surface that delegates every turn to a trusted submitter."""
+    """Parchment-framed text surface delegating every turn to a trusted submitter."""
 
     def __init__(
         self,
@@ -80,6 +87,7 @@ class QtWrittenConversationWidget(QWidget):
         submit_turn: Callable[[str], Mapping[str, Any]],
         target_size: Tuple[int, int],
         on_back: Callable[[], Any],
+        background_path: Path = Path("examples/assets/workspace_scroll.png"),
     ) -> None:
         if not PYQT_AVAILABLE:
             raise ImportError("PyQt5 is required for written conversation surface")
@@ -90,28 +98,34 @@ class QtWrittenConversationWidget(QWidget):
         super().__init__()
         self.submit_turn = submit_turn
         self.on_back = on_back
+        self.background_path = Path(background_path)
+        self._background = QPixmap(str(self.background_path))
         self._pending = False
         self._history = []  # type: list[str]
         self._pool = QThreadPool.globalInstance()
 
         width, height = target_size
+        self.setObjectName("writtenConversation")
         self.setFixedSize(int(width), int(height))
         self.setStyleSheet(
-            "QWidget { background: #09090d; color: #eee8df; }"
-            "QLabel#conversationTitle { color: #d8b56a; font-size: 25px; font-weight: 600; }"
-            "QLabel#conversationStatus { color: #9b9aa2; font-size: 13px; }"
-            "QTextBrowser { background: rgba(8, 8, 12, 225); border: 1px solid #39323d; "
-            "border-radius: 8px; padding: 14px; color: #eee8df; font-size: 17px; }"
-            "QLineEdit { background: #111118; border: 1px solid #514251; border-radius: 7px; "
-            "padding: 10px; color: #f3ede5; font-size: 17px; }"
-            "QPushButton { background: #211b24; color: #eee8df; border: 1px solid #5b485c; "
-            "border-radius: 7px; min-height: 38px; padding: 5px 16px; }"
+            "QWidget#writtenConversation { background: transparent; color: #2d1c11; }"
+            "QWidget#conversationFrame { background: transparent; }"
+            "QLabel#conversationTitle { color: #3a2214; font-size: 22px; font-weight: 700; }"
+            "QLabel#conversationStatus { color: #704b32; font-size: 11px; font-weight: 600; }"
+            "QTextBrowser { background: rgba(8, 8, 12, 220); border: 1px solid rgba(78, 51, 28, 180); "
+            "border-radius: 7px; padding: 9px; color: #eee8df; font-size: 15px; }"
+            "QLineEdit { background: rgba(17, 17, 24, 235); border: 1px solid #6a4f45; border-radius: 6px; "
+            "padding: 7px; color: #f3ede5; font-size: 15px; }"
+            "QPushButton { background: rgba(33, 27, 36, 235); color: #eee8df; border: 1px solid #6a4f45; "
+            "border-radius: 6px; min-height: 30px; padding: 3px 12px; }"
             "QPushButton:disabled { color: #66646a; border-color: #2b2930; }"
         )
 
-        root = QVBoxLayout(self)
-        root.setContentsMargins(34, 26, 34, 28)
-        root.setSpacing(12)
+        self.content_frame = QWidget(self)
+        self.content_frame.setObjectName("conversationFrame")
+        root = QVBoxLayout(self.content_frame)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(7)
 
         header = QHBoxLayout()
         back = QPushButton("Back")
@@ -140,6 +154,7 @@ class QtWrittenConversationWidget(QWidget):
         root.addWidget(self.status)
 
         entry_row = QHBoxLayout()
+        entry_row.setSpacing(7)
         self.entry = QLineEdit()
         self.entry.setMaxLength(MAX_WRITTEN_TURN_CHARACTERS)
         self.entry.setPlaceholderText("Type to Velvet…")
@@ -149,6 +164,35 @@ class QtWrittenConversationWidget(QWidget):
         entry_row.addWidget(self.entry, stretch=1)
         entry_row.addWidget(self.send_button)
         root.addLayout(entry_row)
+
+        self._position_content_frame()
+
+    def paintEvent(self, event: Any) -> None:  # noqa: N802 - Qt API
+        painter = QPainter(self)
+        if self._background.isNull():
+            painter.fillRect(self.rect(), Qt.black)
+            return
+        scaled = self._background.scaled(
+            self.size(),
+            Qt.IgnoreAspectRatio,
+            Qt.SmoothTransformation,
+        )
+        painter.drawPixmap(0, 0, scaled)
+
+    def _position_content_frame(self) -> None:
+        x, y, width, height = _SCROLL_CONTENT_RECT
+        self.content_frame.setGeometry(
+            int(round(self.width() * x)),
+            int(round(self.height() * y)),
+            max(1, int(round(self.width() * width))),
+            max(1, int(round(self.height() * height))),
+        )
+        self.content_frame.raise_()
+
+    def resizeEvent(self, event: Any) -> None:  # noqa: N802 - Qt API
+        super().resizeEvent(event)
+        if hasattr(self, "content_frame"):
+            self._position_content_frame()
 
     def focus_input(self) -> None:
         if PYQT_AVAILABLE:
