@@ -7,7 +7,7 @@ import logging
 from typing import Any, Callable, Mapping, Optional
 
 try:
-    from PyQt5.QtCore import Qt
+    from PyQt5.QtCore import QTimer, Qt
     from PyQt5.QtGui import QFont, QPixmap
     from PyQt5.QtWidgets import QLabel, QWidget
 
@@ -29,6 +29,11 @@ class QtImageSceneWidget(QWidget):
     a widget only when trusted application code has registered that widget ID.
     Missing provider entries may additionally resolve through the small built-in
     allow-list in ``builtin_widget_registry``; manifests never name Python code.
+
+    Widget placements may opt into ``metadata.reveal_mode: background_tap``.
+    Those read-only overlays stay hidden until unused artwork is pressed, then
+    hide again after the configured timeout. Placement-debug mode keeps them
+    visible so Founder authoring remains practical.
 
     ``placement_debug`` draws authoring outlines above the artwork.
     ``coordinate_sink`` receives normalized click coordinates so the real target
@@ -57,7 +62,12 @@ class QtImageSceneWidget(QWidget):
         self.placement_debug = bool(placement_debug)
         self.coordinate_sink = coordinate_sink
         self._placed_widgets = []
+        self._background_reveal_widgets = []
+        self._background_reveal_timeout_ms = 9000
         self._placement_overlay = None
+        self._background_reveal_timer = QTimer(self)
+        self._background_reveal_timer.setSingleShot(True)
+        self._background_reveal_timer.timeout.connect(self._hide_background_reveal_widgets)
 
         target_width, target_height = surface.get_dimensions()
         scene.setup_scaling((target_width, target_height))
@@ -135,9 +145,37 @@ class QtImageSceneWidget(QWidget):
             widget.setParent(self)
             widget.setGeometry(x, y, width, height)
             widget.setProperty("velvet_widget_id", widget_id)
+
+            metadata = placement.get("metadata", {})
+            reveal_mode = str(metadata.get("reveal_mode", "")).strip().lower()
+            if reveal_mode == "background_tap" and not self.placement_debug:
+                try:
+                    timeout_ms = int(metadata.get("reveal_timeout_ms", 9000))
+                except (TypeError, ValueError):
+                    timeout_ms = 9000
+                timeout_ms = max(1000, min(timeout_ms, 60000))
+                self._background_reveal_timeout_ms = max(
+                    self._background_reveal_timeout_ms, timeout_ms
+                )
+                widget.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+                widget.hide()
+                self._background_reveal_widgets.append(widget)
+            else:
+                widget.show()
+                widget.raise_()
+            self._placed_widgets.append(widget)
+
+    def _show_background_reveal_widgets(self) -> None:
+        if not self._background_reveal_widgets:
+            return
+        for widget in self._background_reveal_widgets:
             widget.show()
             widget.raise_()
-            self._placed_widgets.append(widget)
+        self._background_reveal_timer.start(self._background_reveal_timeout_ms)
+
+    def _hide_background_reveal_widgets(self) -> None:
+        for widget in self._background_reveal_widgets:
+            widget.hide()
 
     def _resolve_widget(self, widget_id: str) -> Any:
         provider = self.widget_provider
@@ -175,6 +213,8 @@ class QtImageSceneWidget(QWidget):
         action = self.scene.handle_click(x, y)
         if action:
             self._handle_action(action)
+        elif normalized is not None:
+            self._show_background_reveal_widgets()
         super().mousePressEvent(event)
 
     def _handle_action(self, action: str) -> None:
