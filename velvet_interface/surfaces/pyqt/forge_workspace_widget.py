@@ -18,6 +18,11 @@ _TITLES = {
     "test_bench": "TEST BENCH / VALIDATION",
 }
 
+# Safe rectangular writing frame measured on the physical Founder display from
+# the shared workspace_scroll artwork. The source parchment is slightly
+# trapezoidal, so this rectangle stays inside all four measured edges.
+_SCROLL_CONTENT_RECT = (0.175347, 0.245370, 0.647570, 0.524692)
+
 
 def _mapping(value: Any) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
@@ -73,29 +78,44 @@ class QtForgeWorkspaceWidget(QWidget):
             "QLabel#forgeFooter { font-size: 11px; font-weight: 600; color: #704b32; }"
         )
 
+        # Keep the navigation labels in their existing top-screen positions so
+        # they continue to line up with the separate image-surface press points.
         root = QVBoxLayout(self)
         root.setContentsMargins(66, 28, 66, 30)
-        root.setSpacing(8)
+        root.setSpacing(0)
 
         nav = QHBoxLayout()
         back = QLabel("‹ FORGE")
         back.setObjectName("forgeNav")
         back.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        title = QLabel(_TITLES[workspace_id])
-        title.setObjectName("forgeTitle")
-        title.setAlignment(Qt.AlignCenter)
         emergency = QLabel("EMERGENCY ›")
         emergency.setObjectName("forgeNav")
         emergency.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        nav.addWidget(back, 1)
-        nav.addWidget(title, 4)
-        nav.addWidget(emergency, 1)
+        nav.addWidget(back)
+        nav.addStretch(1)
+        nav.addWidget(emergency)
         root.addLayout(nav)
+        root.addStretch(1)
+
+        # The actual workspace ink lives in a physically measured frame inside
+        # the parchment artwork. All three Forge workspaces share this widget and
+        # therefore share the same Founder-mapped writing area.
+        self.content_frame = QWidget(self)
+        self.content_frame.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.content_frame.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        content = QVBoxLayout(self.content_frame)
+        content.setContentsMargins(0, 0, 0, 0)
+        content.setSpacing(8)
+
+        title = QLabel(_TITLES[workspace_id])
+        title.setObjectName("forgeTitle")
+        title.setAlignment(Qt.AlignCenter)
+        content.addWidget(title)
 
         self.status = QLabel("Reading canonical workspace evidence…")
         self.status.setObjectName("forgeStatus")
         self.status.setAlignment(Qt.AlignCenter)
-        root.addWidget(self.status)
+        content.addWidget(self.status)
 
         body = QHBoxLayout()
         body.setSpacing(26)
@@ -119,7 +139,7 @@ class QtForgeWorkspaceWidget(QWidget):
         right.addWidget(self.right_body, 1)
         body.addLayout(left, 1)
         body.addLayout(right, 1)
-        root.addLayout(body, 1)
+        content.addLayout(body, 1)
 
         self.footer = QLabel()
         self.footer.setObjectName("forgeFooter")
@@ -129,13 +149,29 @@ class QtForgeWorkspaceWidget(QWidget):
             prefix
             + "PRESENTATION AUTHORITY ONLY • PHYSICAL EXECUTION DISABLED"
         )
-        root.addWidget(self.footer)
+        content.addWidget(self.footer)
+        self._position_content_frame()
 
         self.timer = QTimer(self)
         self.timer.setInterval(int(refresh_ms))
         self.timer.timeout.connect(self.refresh)
         self.timer.start()
         self.refresh()
+
+    def _position_content_frame(self) -> None:
+        x, y, width, height = _SCROLL_CONTENT_RECT
+        self.content_frame.setGeometry(
+            int(round(self.width() * x)),
+            int(round(self.height() * y)),
+            max(1, int(round(self.width() * width))),
+            max(1, int(round(self.height() * height))),
+        )
+        self.content_frame.raise_()
+
+    def resizeEvent(self, event: Any) -> None:
+        super().resizeEvent(event)
+        if hasattr(self, "content_frame"):
+            self._position_content_frame()
 
     def refresh(self) -> None:
         try:
