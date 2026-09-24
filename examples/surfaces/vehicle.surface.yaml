@@ -140,29 +140,33 @@ widgets:
 - widget_id: vehicle_power_status
   coordinate_space: normalized
   rect:
-  - 0.015
-  - 0.43
-  - 0.215
-  - 0.30
+  - 0.019965
+  - 0.233025
+  - 0.195313
+  - 0.237654
   z_index: 20
   visible_in:
   - owner
   - service
   metadata:
     purpose: Read-only vehicle voltage and ignition evidence
+    reveal_mode: background_tap
+    reveal_timeout_ms: 9000
 - widget_id: gnss_status
   coordinate_space: normalized
   rect:
-  - 0.755
-  - 0.36
-  - 0.23
-  - 0.42
+  - 0.793403
+  - 0.344136
+  - 0.190104
+  - 0.344136
   z_index: 20
   visible_in:
   - owner
   - service
   metadata:
     purpose: Read-only GNSS position and fix evidence
+    reveal_mode: background_tap
+    reveal_timeout_ms: 9000
 transitions:
   enter: fade
   exit: fade
@@ -170,4 +174,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: Bench-mapped vehicle skin with live read-only power and GNSS evidence overlays
+  implementation_status: Bench-mapped vehicle skin with tap-revealed read-only power and GNSS evidence overlays
