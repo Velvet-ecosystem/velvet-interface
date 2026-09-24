@@ -18,10 +18,10 @@ _TITLES = {
     "test_bench": "TEST BENCH / VALIDATION",
 }
 
-# Safe rectangular writing frame measured on the physical Founder display from
-# the shared workspace_scroll artwork. The source parchment is slightly
-# trapezoidal, so this rectangle stays inside all four measured edges.
-_SCROLL_CONTENT_RECT = (0.175347, 0.245370, 0.647570, 0.524692)
+# Founder physical review showed the title can safely move upward between the
+# scroll-line ornaments. Preserve the measured left/right/bottom bounds while
+# extending the writing frame upward to expose more vertical text capacity.
+_SCROLL_CONTENT_RECT = (0.175347, 0.180000, 0.647570, 0.590062)
 
 
 def _mapping(value: Any) -> Mapping[str, Any]:
