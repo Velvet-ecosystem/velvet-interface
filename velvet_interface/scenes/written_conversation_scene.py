@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 from velvet_interface.core.scene import Scene
@@ -21,6 +22,7 @@ class WrittenConversationScene(Scene):
         *,
         submit_turn: Any,
         access_provider: Any,
+        background_path: Optional[Path] = None,
         scene_id: str = "written_conversation",
     ) -> None:
         super().__init__(scene_id)
@@ -30,6 +32,7 @@ class WrittenConversationScene(Scene):
             raise TypeError("access_provider must be callable")
         self.submit_turn = submit_turn
         self.access_provider = access_provider
+        self.background_path = Path(background_path or "examples/assets/workspace_scroll.png")
         self._router = None
         self._surface = None
         self._widget = None
@@ -76,6 +79,7 @@ class WrittenConversationScene(Scene):
             submit_turn=self._submit_bounded,
             target_size=(width, height),
             on_back=self._go_back,
+            background_path=self.background_path,
         )
         return self._widget
 
