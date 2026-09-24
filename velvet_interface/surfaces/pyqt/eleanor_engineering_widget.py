@@ -113,10 +113,16 @@ class QtEleanorEngineeringWidget(QWidget):
         if self._background.isNull():
             painter.fillRect(self.rect(), Qt.black)
             return
-        scaled = self._background.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        x = (scaled.width() - self.width()) // 2
-        y = (scaled.height() - self.height()) // 2
-        painter.drawPixmap(0, 0, scaled, x, y, self.width(), self.height())
+        # Match the standard image-surface renderer: the manifest's 16:9 base
+        # rectangle owns the composition, so the artwork is scaled to that
+        # rectangle instead of preserving the source pixmap's incidental ratio.
+        scaled = self._background.scaled(
+            self.width(),
+            self.height(),
+            Qt.IgnoreAspectRatio,
+            Qt.SmoothTransformation,
+        )
+        painter.drawPixmap(0, 0, scaled)
 
     def refresh(self) -> None:
         try:
