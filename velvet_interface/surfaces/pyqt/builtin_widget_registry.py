@@ -27,6 +27,9 @@ def resolve_builtin_widget(
     velour_web_executable: Optional[Path] = None,
     velour_search_endpoint: Optional[str] = None,
     velour_allow_loopback_search: Optional[bool] = None,
+    velour_federated_executable: Optional[Path] = None,
+    velour_library_root: Optional[Path] = None,
+    velour_kiwix_endpoint: Optional[str] = None,
 ) -> Optional[Any]:
     """Return one trusted built-in QWidget for an exact allow-listed ID.
 
@@ -42,9 +45,53 @@ def resolve_builtin_widget(
         "forge_module_lab",
         "forge_test_bench",
         "velour_web_research",
+        "velour_archive_search",
     }
     if widget_id not in allowed:
         return None
+
+    if widget_id == "velour_archive_search":
+        from velvet_interface.surfaces.pyqt.archive_search_widget import (
+            QtArchiveSearchWidget,
+        )
+        from velvet_interface.velour_search_bridge import VelourSearchBridge
+
+        executable = Path(
+            velour_federated_executable
+            if velour_federated_executable is not None
+            else os.environ.get(
+                "VELVET_VELOUR_FEDERATED_EXECUTABLE",
+                str(Path.home() / ".local/bin/velour-search"),
+            )
+        ).expanduser()
+        library_root = Path(
+            velour_library_root
+            if velour_library_root is not None
+            else os.environ.get("VELVET_VELOUR_LIBRARY_ROOT", "/srv/velvet/library")
+        ).expanduser()
+        kiwix_endpoint = str(
+            velour_kiwix_endpoint
+            if velour_kiwix_endpoint is not None
+            else os.environ.get("VELVET_VELOUR_KIWIX_ENDPOINT", "")
+        ).strip()
+        web_endpoint = str(
+            velour_search_endpoint
+            if velour_search_endpoint is not None
+            else os.environ.get("VELVET_VELOUR_SEARCH_ENDPOINT", "")
+        ).strip()
+        allow_loopback = (
+            _env_true("VELVET_VELOUR_SEARCH_ALLOW_LOOPBACK")
+            if velour_allow_loopback_search is None
+            else bool(velour_allow_loopback_search)
+        )
+        bridge = VelourSearchBridge(
+            executable,
+            library_root,
+            kiwix_endpoint=kiwix_endpoint,
+            web_endpoint=web_endpoint,
+            allow_loopback_web=allow_loopback,
+        )
+        return QtArchiveSearchWidget(search_provider=bridge.search)
 
     if widget_id == "velour_web_research":
         from velvet_interface.surfaces.pyqt.web_research_widget import (

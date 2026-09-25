@@ -53,6 +53,34 @@ class BuiltinWidgetRegistryTests(unittest.TestCase):
             document_provider=bridge_marker.fetch,
         )
 
+    def test_velour_archive_search_wires_federated_provider(self):
+        marker = object()
+        bridge_marker = SimpleNamespace(search=object())
+        with patch(
+            "velvet_interface.surfaces.pyqt.archive_search_widget.QtArchiveSearchWidget",
+            return_value=marker,
+        ) as factory, patch(
+            "velvet_interface.velour_search_bridge.VelourSearchBridge",
+            return_value=bridge_marker,
+        ) as bridge_factory:
+            resolved = resolve_builtin_widget(
+                "velour_archive_search",
+                velour_federated_executable=Path("/opt/velour/bin/velour-search"),
+                velour_library_root=Path("/srv/velvet/library"),
+                velour_kiwix_endpoint="http://127.0.0.1:8080",
+                velour_search_endpoint="https://search.example/search",
+                velour_allow_loopback_search=False,
+            )
+        self.assertIs(resolved, marker)
+        bridge_factory.assert_called_once_with(
+            Path("/opt/velour/bin/velour-search"),
+            Path("/srv/velvet/library"),
+            kiwix_endpoint="http://127.0.0.1:8080",
+            web_endpoint="https://search.example/search",
+            allow_loopback_web=False,
+        )
+        factory.assert_called_once_with(search_provider=bridge_marker.search)
+
     def test_development_marker_is_presentation_only_input(self):
         with patch.dict(os.environ, {"VELVET_INTERFACE_DEVELOPMENT": "true"}, clear=True):
             self.assertTrue(_development_mode())
