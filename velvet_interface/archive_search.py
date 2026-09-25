@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 
 _ALLOWED_PROVIDERS = {"library", "zim", "web"}
@@ -59,4 +59,4 @@ class ArchiveSearchSnapshot:
             raise ValueError("unknown Archive search source status: %s" % sorted(unknown))
 
 
-ArchiveSearchProvider = object
+ArchiveSearchProvider = Callable[[str], ArchiveSearchSnapshot]
