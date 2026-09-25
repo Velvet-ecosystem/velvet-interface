@@ -67,11 +67,11 @@ press_points:
     - 0.551389
   - - 0.745313
     - 0.531944
-  action: emit:archive_web_research_reserved
+  action: navigate:velour_web_research
   label: Velour Web Research
   accessibility_label: Open Velour's controlled web research surface
   z_index: 5
-  enabled: false
+  enabled: true
 - id: open_receipts_continuity
   coordinate_space: normalized
   polygon:
@@ -144,4 +144,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: Archive furniture geometry mapped; Library Reader active; Web, Receipts/Continuity, Catalog/Research, Front Desk, and Search reserved for later surfaces
+  implementation_status: Archive furniture geometry mapped; Library Reader and Web Research shell active; Receipts/Continuity, Catalog/Research, Front Desk, and Search reserved for later surfaces

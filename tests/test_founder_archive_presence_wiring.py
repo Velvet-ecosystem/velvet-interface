@@ -22,13 +22,22 @@ class FounderArchivePresenceWiringTests(unittest.TestCase):
             ],
         )
 
-        expected_reserved = {
-            "open_web_research": [
+        self.assertEqual(
+            points["open_web_research"]["polygon"],
+            [
                 [0.776563, 0.469444],
                 [0.825781, 0.477778],
                 [0.785937, 0.551389],
                 [0.745313, 0.531944],
             ],
+        )
+        self.assertEqual(
+            points["open_web_research"]["action"],
+            "navigate:velour_web_research",
+        )
+        self.assertTrue(points["open_web_research"]["enabled"])
+
+        expected_reserved = {
             "open_receipts_continuity": [
                 [0.861719, 0.698611],
                 [0.939063, 0.683333],
@@ -62,6 +71,24 @@ class FounderArchivePresenceWiringTests(unittest.TestCase):
                 self.assertTrue(points[point_id]["action"].startswith("emit:"))
 
         self.assertEqual(document["metadata"]["physical_control"], "disabled")
+
+    def test_web_research_surface_uses_scroll_and_measured_writing_area(self):
+        path = Path("examples/surfaces/velour_web_research.surface.yaml")
+        document = yaml.safe_load(path.read_text(encoding="utf-8"))
+        points = {point["id"]: point for point in document["press_points"]}
+        widgets = {item["widget_id"]: item for item in document["widgets"]}
+
+        self.assertEqual(document["background"]["image"], "../assets/workspace_scroll.png")
+        self.assertEqual(points["return_archive"]["action"], "navigate:archive")
+        self.assertEqual(points["emergency"]["action"], "navigate:emergency")
+        self.assertEqual(
+            widgets["velour_web_research"]["rect"],
+            [0.175347, 0.180000, 0.647570, 0.590062],
+        )
+        self.assertEqual(document["metadata"]["authority"], "none")
+        self.assertEqual(document["metadata"]["network_adapter"], "disconnected")
+        self.assertFalse(document["metadata"]["scripts_executed"])
+        self.assertFalse(document["metadata"]["automatic_library_persistence"])
 
     def test_home_declares_velvet_presence_without_replacing_conversation_entry(self):
         path = Path("examples/surfaces/founder_home.surface.yaml")
