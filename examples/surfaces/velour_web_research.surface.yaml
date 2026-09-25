@@ -45,9 +45,9 @@ widgets:
   coordinate_space: normalized
   rect:
   - 0.175347
-  - 0.180000
+  - 0.195000
   - 0.647570
-  - 0.590062
+  - 0.575062
   z_index: 20
   visible_in:
   - owner
@@ -68,4 +68,4 @@ metadata:
   scripts_executed: false
   external_links_opened: false
   automatic_library_persistence: false
-  implementation_status: Interactive Scroll shell active; live search/fetch provider intentionally not connected yet
+  implementation_status: Interactive Scroll shell active; Founder visual fit nudged downward after physical display review; live search/fetch provider intentionally not connected yet
