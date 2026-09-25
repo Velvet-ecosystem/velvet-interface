@@ -1,0 +1,71 @@
+schema: velvet.interface.surface.v1
+name: velour_web_research
+base_resolution:
+- 1920
+- 1080
+background:
+  image: ../assets/workspace_scroll.png
+  fit: cover
+  alt_text: Velour Web Research scroll
+press_points:
+- id: return_archive
+  coordinate_space: normalized
+  polygon:
+  - - 0.018
+    - 0.025
+  - - 0.135
+    - 0.025
+  - - 0.135
+    - 0.085
+  - - 0.018
+    - 0.085
+  action: navigate:archive
+  label: Return to Archive
+  accessibility_label: Return to Velour's Archive Library
+  z_index: 30
+  enabled: true
+- id: emergency
+  coordinate_space: normalized
+  polygon:
+  - - 0.865
+    - 0.018
+  - - 0.988
+    - 0.018
+  - - 0.988
+    - 0.072
+  - - 0.865
+    - 0.072
+  action: navigate:emergency
+  label: Emergency
+  accessibility_label: Open emergency controls
+  z_index: 30
+  enabled: true
+widgets:
+- widget_id: velour_web_research
+  coordinate_space: normalized
+  rect:
+  - 0.175347
+  - 0.180000
+  - 0.647570
+  - 0.590062
+  z_index: 20
+  visible_in:
+  - owner
+  - guest
+  - service
+  metadata:
+    purpose: Controlled reference-only research desk inside the measured Scroll writing area
+transitions:
+  enter: fade
+  exit: fade
+metadata:
+  surface: Founder UP2
+  posture: presentation-only
+  physical_control: disabled
+  authority: none
+  web_authority: none
+  network_adapter: disconnected
+  scripts_executed: false
+  external_links_opened: false
+  automatic_library_persistence: false
+  implementation_status: Interactive Scroll shell active; live search/fetch provider intentionally not connected yet
