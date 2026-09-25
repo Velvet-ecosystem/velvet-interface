@@ -24,6 +24,9 @@ def resolve_builtin_widget(
     eleanor_project: Optional[Path] = None,
     modules_root: Optional[Path] = None,
     development_mode: Optional[bool] = None,
+    velour_web_executable: Optional[Path] = None,
+    velour_search_endpoint: Optional[str] = None,
+    velour_allow_loopback_search: Optional[bool] = None,
 ) -> Optional[Any]:
     """Return one trusted built-in QWidget for an exact allow-listed ID.
 
@@ -48,7 +51,38 @@ def resolve_builtin_widget(
             QtWebResearchWidget,
         )
 
-        return QtWebResearchWidget()
+        endpoint = str(
+            velour_search_endpoint
+            if velour_search_endpoint is not None
+            else os.environ.get("VELVET_VELOUR_SEARCH_ENDPOINT", "")
+        ).strip()
+        if not endpoint:
+            return QtWebResearchWidget()
+
+        from velvet_interface.velour_web_bridge import VelourWebBridge
+
+        executable = Path(
+            velour_web_executable
+            if velour_web_executable is not None
+            else os.environ.get(
+                "VELVET_VELOUR_WEB_EXECUTABLE",
+                str(Path.home() / "velvet/.venvs/velour/bin/velour-web"),
+            )
+        ).expanduser()
+        allow_loopback = (
+            _env_true("VELVET_VELOUR_SEARCH_ALLOW_LOOPBACK")
+            if velour_allow_loopback_search is None
+            else bool(velour_allow_loopback_search)
+        )
+        bridge = VelourWebBridge(
+            executable,
+            endpoint,
+            allow_loopback_endpoint=allow_loopback,
+        )
+        return QtWebResearchWidget(
+            search_provider=bridge.search,
+            document_provider=bridge.fetch,
+        )
 
     if widget_id in {"climate_environment_status", "lighting_context_status"}:
         body_snapshot = Path(

@@ -55,6 +55,40 @@ class WebResearchContractTests(unittest.TestCase):
                 url="https://example.org/",
             )
 
+    def test_document_carries_bounded_fetch_provenance(self):
+        document = WebResearchDocument(
+            result_id="r1",
+            title="Reference",
+            source="example.org",
+            url="https://example.org/reference",
+            html="<p>reference</p>",
+            retrieved_at="2026-09-25T07:00:00Z",
+            content_sha256="a" * 64,
+            content_type="text/html",
+            byte_length=128,
+        )
+        self.assertEqual(document.content_sha256, "a" * 64)
+        self.assertEqual(document.byte_length, 128)
+
+        with self.assertRaises(ValueError):
+            WebResearchDocument(
+                result_id="r1",
+                title="Bad digest",
+                source="example.org",
+                url="https://example.org/reference",
+                text="reference",
+                content_sha256="not-a-digest",
+            )
+        with self.assertRaises(ValueError):
+            WebResearchDocument(
+                result_id="r1",
+                title="Bad length",
+                source="example.org",
+                url="https://example.org/reference",
+                text="reference",
+                byte_length=-1,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
