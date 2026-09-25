@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -27,9 +28,7 @@ class BuiltinWidgetRegistryTests(unittest.TestCase):
 
     def test_velour_web_research_wires_only_explicit_provider_boundary(self):
         marker = object()
-        bridge_marker = object()
-        bridge_marker.search = object()  # type: ignore[attr-defined]
-        bridge_marker.fetch = object()  # type: ignore[attr-defined]
+        bridge_marker = SimpleNamespace(search=object(), fetch=object())
         with patch(
             "velvet_interface.surfaces.pyqt.web_research_widget.QtWebResearchWidget",
             return_value=marker,
@@ -50,8 +49,8 @@ class BuiltinWidgetRegistryTests(unittest.TestCase):
             allow_loopback_endpoint=False,
         )
         factory.assert_called_once_with(
-            search_provider=bridge_marker.search,  # type: ignore[attr-defined]
-            document_provider=bridge_marker.fetch,  # type: ignore[attr-defined]
+            search_provider=bridge_marker.search,
+            document_provider=bridge_marker.fetch,
         )
 
     def test_development_marker_is_presentation_only_input(self):
