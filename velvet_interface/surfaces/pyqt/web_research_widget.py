@@ -57,6 +57,9 @@ class QtWebResearchWidget(QWidget):
         self.document_provider = document_provider
         self.on_ask_velour = on_ask_velour
         self.on_save_library = on_save_library
+        self._adapter_configured = (
+            self.search_provider is not None and self.document_provider is not None
+        )
         self._results = {}  # type: Dict[str, WebResearchResult]
         self._current_document = None  # type: Optional[WebResearchDocument]
 
@@ -81,7 +84,11 @@ class QtWebResearchWidget(QWidget):
         header = QHBoxLayout()
         title = QLabel("VELOUR RESEARCH")
         title.setObjectName("researchTitle")
-        self.status_label = QLabel("REFERENCE ONLY · NETWORK ADAPTER NOT CONNECTED")
+        self.status_label = QLabel(
+            "REFERENCE ONLY · WEB BRIDGE CONFIGURED"
+            if self._adapter_configured
+            else "REFERENCE ONLY · NETWORK ADAPTER NOT CONNECTED"
+        )
         self.status_label.setObjectName("researchStatus")
         self.status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         header.addWidget(title)
@@ -147,7 +154,9 @@ class QtWebResearchWidget(QWidget):
         row = QHBoxLayout()
         self.reader_title = QLabel("Research desk ready")
         self.reader_title.setObjectName("researchSection")
-        self.reader_mode = QLabel("OFFLINE SHELL")
+        self.reader_mode = QLabel(
+            "WEB BRIDGE READY" if self._adapter_configured else "OFFLINE SHELL"
+        )
         self.reader_mode.setObjectName("researchStatus")
         row.addWidget(self.reader_title)
         row.addStretch(1)
@@ -157,14 +166,24 @@ class QtWebResearchWidget(QWidget):
         self.reader.setOpenExternalLinks(False)
         self.reader.setOpenLinks(False)
         self.reader.document().setBaseUrl(QUrl())
-        self.reader.setHtml(
-            "<h2>Velour Research</h2>"
-            "<p>The Scroll stays fixed while this reading pane scrolls vertically.</p>"
-            "<p><b>No live web adapter is connected in this build.</b> Search and fetched "
-            "pages will arrive through an explicit provider boundary in the next phase.</p>"
-            "<p>Web material remains external reference input: no scripts, no Court "
-            "authority, no vehicle control, and no automatic Library persistence.</p>"
-        )
+        if self._adapter_configured:
+            self.reader.setHtml(
+                "<h2>Velour Research</h2>"
+                "<p>The controlled research bridge is configured. Search returns bounded "
+                "reference metadata, and only a selected result is fetched.</p>"
+                "<p>Fetched pages are sanitized before they reach this Scroll. Web material "
+                "remains external reference input: no scripts, no Court authority, no vehicle "
+                "control, and no automatic Library persistence.</p>"
+            )
+        else:
+            self.reader.setHtml(
+                "<h2>Velour Research</h2>"
+                "<p>The Scroll stays fixed while this reading pane scrolls vertically.</p>"
+                "<p><b>No live web adapter is configured in this build.</b> Add the reviewed "
+                "Velour provider boundary to enable live research.</p>"
+                "<p>Web material remains external reference input: no scripts, no Court "
+                "authority, no vehicle control, and no automatic Library persistence.</p>"
+            )
         layout.addLayout(row)
         layout.addWidget(self.reader, 1)
         return panel
