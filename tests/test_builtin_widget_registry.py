@@ -15,6 +15,15 @@ class BuiltinWidgetRegistryTests(unittest.TestCase):
         self.assertIsNone(resolve_builtin_widget("python:os.system"))
         self.assertIsNone(resolve_builtin_widget("forge_unknown"))
 
+    def test_velour_web_research_resolves_only_through_allow_list(self):
+        marker = object()
+        with patch(
+            "velvet_interface.surfaces.pyqt.web_research_widget.QtWebResearchWidget",
+            return_value=marker,
+        ) as factory:
+            self.assertIs(resolve_builtin_widget("velour_web_research"), marker)
+            factory.assert_called_once_with()
+
     def test_development_marker_is_presentation_only_input(self):
         with patch.dict(os.environ, {"VELVET_INTERFACE_DEVELOPMENT": "true"}, clear=True):
             self.assertTrue(_development_mode())
