@@ -37,6 +37,21 @@ class FounderArchivePresenceWiringTests(unittest.TestCase):
         )
         self.assertTrue(points["open_web_research"]["enabled"])
 
+        self.assertEqual(
+            points["open_archive_search"]["polygon"],
+            [
+                [0.605469, 0.776389],
+                [0.659375, 0.772222],
+                [0.682031, 0.887500],
+                [0.679687, 0.891667],
+            ],
+        )
+        self.assertEqual(
+            points["open_archive_search"]["action"],
+            "navigate:velour_archive_search",
+        )
+        self.assertTrue(points["open_archive_search"]["enabled"])
+
         expected_reserved = {
             "open_receipts_continuity": [
                 [0.861719, 0.698611],
@@ -55,12 +70,6 @@ class FounderArchivePresenceWiringTests(unittest.TestCase):
                 [0.494531, 0.434722],
                 [0.564844, 0.487500],
                 [0.396875, 0.484722],
-            ],
-            "open_archive_search": [
-                [0.605469, 0.776389],
-                [0.659375, 0.772222],
-                [0.682031, 0.887500],
-                [0.679687, 0.891667],
             ],
         }
         for point_id, polygon in expected_reserved.items():
@@ -88,6 +97,23 @@ class FounderArchivePresenceWiringTests(unittest.TestCase):
         self.assertEqual(document["metadata"]["authority"], "none")
         self.assertEqual(document["metadata"]["network_adapter"], "disconnected")
         self.assertFalse(document["metadata"]["scripts_executed"])
+        self.assertFalse(document["metadata"]["automatic_library_persistence"])
+
+    def test_archive_search_surface_reuses_reviewed_scroll_geometry(self):
+        path = Path("examples/surfaces/velour_archive_search.surface.yaml")
+        document = yaml.safe_load(path.read_text(encoding="utf-8"))
+        points = {point["id"]: point for point in document["press_points"]}
+        widgets = {item["widget_id"]: item for item in document["widgets"]}
+
+        self.assertEqual(document["background"]["image"], "../assets/workspace_scroll.png")
+        self.assertEqual(points["return_archive"]["action"], "navigate:archive")
+        self.assertEqual(points["emergency"]["action"], "navigate:emergency")
+        self.assertEqual(
+            widgets["velour_archive_search"]["rect"],
+            [0.175347, 0.195000, 0.647570, 0.575062],
+        )
+        self.assertEqual(document["metadata"]["authority"], "none")
+        self.assertTrue(document["metadata"]["external_reference"])
         self.assertFalse(document["metadata"]["automatic_library_persistence"])
 
     def test_home_declares_velvet_presence_without_replacing_conversation_entry(self):
