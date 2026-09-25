@@ -131,11 +131,11 @@ press_points:
     - 0.887500
   - - 0.679687
     - 0.891667
-  action: emit:archive_search_reserved
+  action: navigate:velour_archive_search
   label: Velour Search
-  accessibility_label: Search Velour's local archive and research indexes
+  accessibility_label: Search Velour's Library, ZIM shelves, and configured live Web research
   z_index: 5
-  enabled: false
+  enabled: true
 widgets: []
 transitions:
   enter: fade
@@ -144,4 +144,4 @@ metadata:
   surface: Founder UP2
   posture: presentation-only
   physical_control: disabled
-  implementation_status: Archive furniture geometry mapped; Library Reader and Web Research shell active; Receipts/Continuity, Catalog/Research, Front Desk, and Search reserved for later surfaces
+  implementation_status: Archive furniture geometry mapped; Library Reader, Web Research, and federated Archive Search active; Receipts/Continuity, Catalog/Research, and Front Desk reserved for later surfaces
