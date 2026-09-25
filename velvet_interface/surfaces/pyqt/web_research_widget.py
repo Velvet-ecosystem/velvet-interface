@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
-"""Scroll-framed PyQt research desk for Velour."""
+"""Interactive research desk rendered inside the reusable Scroll artwork."""
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, Optional
 
 try:
     from PyQt5.QtCore import Qt, QUrl
-    from PyQt5.QtGui import QPainter, QPixmap
     from PyQt5.QtWidgets import (
         QHBoxLayout,
         QLabel,
@@ -34,18 +32,19 @@ from velvet_interface.web_research import (
 )
 
 
-BackCallback = Callable[[], Any]
-ItemCallback = Callable[[WebResearchDocument], Any]
+ItemCallback = Callable[[WebResearchDocument], object]
 
 
 class QtWebResearchWidget(QWidget):
-    """Touch-friendly web research shell with no implicit network authority."""
+    """Touch-friendly web research pane with no implicit network authority.
+
+    The image-surface manifest owns the Scroll artwork, Return hotspot, and
+    Emergency hotspot. This widget is deliberately placed only inside the
+    measured writing area so those outer surface controls remain independent.
+    """
 
     def __init__(
         self,
-        target_size: Tuple[int, int],
-        background_path: Path,
-        on_back: Optional[BackCallback] = None,
         search_provider: Optional[SearchProvider] = None,
         document_provider: Optional[DocumentProvider] = None,
         on_ask_velour: Optional[ItemCallback] = None,
@@ -54,44 +53,39 @@ class QtWebResearchWidget(QWidget):
         if not PYQT_AVAILABLE:
             raise ImportError("PyQt5 is required for Velour Web Research")
         super().__init__()
-        self.target_size = target_size
-        self.background_path = Path(background_path)
-        self.on_back = on_back
         self.search_provider = search_provider
         self.document_provider = document_provider
         self.on_ask_velour = on_ask_velour
         self.on_save_library = on_save_library
-        self._background = QPixmap(str(self.background_path))
         self._results = {}  # type: Dict[str, WebResearchResult]
         self._current_document = None  # type: Optional[WebResearchDocument]
 
         self.setObjectName("velourWebResearch")
-        self.setFixedSize(*target_size)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setStyleSheet(
-            "QWidget#velourWebResearch { color: #24180f; }"
-            "QWidget#researchPanel { background: rgba(246, 235, 211, 220); border: 1px solid rgba(78, 51, 28, 150); border-radius: 10px; }"
+            "QWidget#velourWebResearch { background: transparent; color: #24180f; }"
+            "QWidget#researchPanel { background: rgba(246, 235, 211, 225); border: 1px solid rgba(78, 51, 28, 150); border-radius: 8px; }"
             "QWidget#researchViewport { background: rgba(255, 255, 255, 246); border: 1px solid rgba(70, 60, 48, 150); border-radius: 8px; }"
-            "QLabel#researchTitle { font-size: 27px; font-weight: 600; color: #3a2415; }"
-            "QLabel#researchSection { font-size: 16px; font-weight: 600; color: #4e321c; }"
-            "QLabel#researchStatus { color: #67451f; padding: 4px; }"
-            "QPushButton { min-height: 34px; padding: 4px 10px; }"
-            "QLineEdit, QListWidget { background: rgba(255, 252, 244, 238); color: #21170f; }"
-            "QTextBrowser { background: white; color: #171717; border: none; padding: 10px; }"
+            "QLabel#researchTitle { background: transparent; font-size: 23px; font-weight: 700; color: #3a2415; }"
+            "QLabel#researchSection { background: transparent; font-size: 15px; font-weight: 700; color: #4e321c; }"
+            "QLabel#researchStatus { background: transparent; color: #67451f; font-size: 11px; padding: 2px; }"
+            "QPushButton { min-height: 30px; padding: 3px 8px; }"
+            "QLineEdit, QListWidget { background: rgba(255, 252, 244, 240); color: #21170f; }"
+            "QTextBrowser { background: white; color: #171717; border: none; padding: 8px; }"
         )
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(22, 18, 22, 18)
-        root.setSpacing(8)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(6)
 
         header = QHBoxLayout()
         title = QLabel("VELOUR RESEARCH")
         title.setObjectName("researchTitle")
-        self.status_label = QLabel("REFERENCE ONLY · network adapter not connected")
+        self.status_label = QLabel("REFERENCE ONLY · NETWORK ADAPTER NOT CONNECTED")
         self.status_label.setObjectName("researchStatus")
-        self.back_button = QPushButton("Back")
+        self.status_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         header.addWidget(title)
         header.addWidget(self.status_label, 1)
-        header.addWidget(self.back_button)
         root.addLayout(header)
 
         search_row = QHBoxLayout()
@@ -103,7 +97,7 @@ class QtWebResearchWidget(QWidget):
         root.addLayout(search_row)
 
         body = QHBoxLayout()
-        body.setSpacing(10)
+        body.setSpacing(8)
         body.addWidget(self._build_results_panel(), 3)
         body.addWidget(self._build_reader_panel(), 8)
         root.addLayout(body, 1)
@@ -121,25 +115,12 @@ class QtWebResearchWidget(QWidget):
         footer.addWidget(self.save_button)
         root.addLayout(footer)
 
-        self.back_button.clicked.connect(self._go_back)
         self.search_button.clicked.connect(self.search)
         self.search_box.returnPressed.connect(self.search)
         self.open_button.clicked.connect(self.open_selected)
         self.result_list.itemDoubleClicked.connect(lambda _item: self.open_selected())
         self.ask_button.clicked.connect(self._ask_current)
         self.save_button.clicked.connect(self._save_current)
-
-    def paintEvent(self, event: Any) -> None:  # noqa: N802 - Qt API
-        painter = QPainter(self)
-        if self._background.isNull():
-            painter.fillRect(self.rect(), Qt.black)
-            return
-        scaled = self._background.scaled(
-            self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
-        )
-        x = (scaled.width() - self.width()) // 2
-        y = (scaled.height() - self.height()) // 2
-        painter.drawPixmap(0, 0, scaled, x, y, self.width(), self.height())
 
     def _panel(self, object_name: str = "researchPanel") -> QWidget:
         panel = QWidget()
@@ -149,6 +130,7 @@ class QtWebResearchWidget(QWidget):
     def _build_results_panel(self) -> QWidget:
         panel = self._panel()
         layout = QVBoxLayout(panel)
+        layout.setContentsMargins(7, 7, 7, 7)
         section = QLabel("Results")
         section.setObjectName("researchSection")
         self.result_list = QListWidget()
@@ -161,6 +143,7 @@ class QtWebResearchWidget(QWidget):
     def _build_reader_panel(self) -> QWidget:
         panel = self._panel("researchViewport")
         layout = QVBoxLayout(panel)
+        layout.setContentsMargins(7, 7, 7, 7)
         row = QHBoxLayout()
         self.reader_title = QLabel("Research desk ready")
         self.reader_title.setObjectName("researchSection")
@@ -176,8 +159,7 @@ class QtWebResearchWidget(QWidget):
         self.reader.document().setBaseUrl(QUrl())
         self.reader.setHtml(
             "<h2>Velour Research</h2>"
-            "<p>This is the controlled research surface. The scroll frame stays fixed; "
-            "this reading pane scrolls vertically inside it.</p>"
+            "<p>The Scroll stays fixed while this reading pane scrolls vertically.</p>"
             "<p><b>No live web adapter is connected in this build.</b> Search and fetched "
             "pages will arrive through an explicit provider boundary in the next phase.</p>"
             "<p>Web material remains external reference input: no scripts, no Court "
@@ -210,7 +192,10 @@ class QtWebResearchWidget(QWidget):
                 row.setToolTip(result.summary)
             self.result_list.addItem(row)
             self._results[result.result_id] = result
-        self._status("%d result%s · reference only" % (len(results), "" if len(results) == 1 else "s"))
+        self._status(
+            "%d result%s · reference only"
+            % (len(results), "" if len(results) == 1 else "s")
+        )
 
     def open_selected(self) -> None:
         row = self.result_list.currentItem()
@@ -254,7 +239,3 @@ class QtWebResearchWidget(QWidget):
 
     def _status(self, text: str) -> None:
         self.status_label.setText(text)
-
-    def _go_back(self) -> None:
-        if self.on_back is not None:
-            self.on_back()
