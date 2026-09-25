@@ -83,7 +83,7 @@ class FounderArchivePresenceWiringTests(unittest.TestCase):
         self.assertEqual(points["emergency"]["action"], "navigate:emergency")
         self.assertEqual(
             widgets["velour_web_research"]["rect"],
-            [0.175347, 0.180000, 0.647570, 0.590062],
+            [0.175347, 0.195000, 0.647570, 0.575062],
         )
         self.assertEqual(document["metadata"]["authority"], "none")
         self.assertEqual(document["metadata"]["network_adapter"], "disconnected")
