@@ -38,9 +38,17 @@ def resolve_builtin_widget(
         "forge_engineering_design",
         "forge_module_lab",
         "forge_test_bench",
+        "velour_web_research",
     }
     if widget_id not in allowed:
         return None
+
+    if widget_id == "velour_web_research":
+        from velvet_interface.surfaces.pyqt.web_research_widget import (
+            QtWebResearchWidget,
+        )
+
+        return QtWebResearchWidget()
 
     if widget_id in {"climate_environment_status", "lighting_context_status"}:
         body_snapshot = Path(
