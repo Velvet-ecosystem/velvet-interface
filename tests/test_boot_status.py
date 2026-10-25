@@ -17,12 +17,12 @@ class BootStatusTests(unittest.TestCase):
                 "route_count": 4,
             }
         )
-        self.assertEqual(model.continuity, "VERIFIED")
-        self.assertEqual(model.court, "READY")
-        self.assertEqual(model.runtime, "ACTIVE")
+        self.assertEqual(model.continuity, "UNVERIFIED")
+        self.assertEqual(model.court, "BLOCKED")
+        self.assertEqual(model.runtime, "UNKNOWN")
         self.assertEqual(model.routes, "4 READ-ONLY")
         self.assertEqual(model.physical_control, "DISABLED")
-        self.assertEqual(model.message, "Waiting for Mister")
+        self.assertIn("Preflight passed", model.message)
 
     def test_blocked_snapshot_surfaces_exact_reason(self):
         model = view_model_from_snapshot(

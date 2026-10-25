@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import os
+from velvet_interface.runtime_health import validate_live_status
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Tuple
@@ -20,6 +22,7 @@ class BootStatusViewModel:
     physical_control: str
     message: str
     blocked_reasons: Tuple[str, ...]
+    session_id: str = ""
 
 
 def _state_text(value: Any, fallback: str = "UNKNOWN") -> str:
@@ -43,29 +46,27 @@ def _collect_reasons(doctor: Dict[str, Any]) -> Tuple[str, ...]:
     return tuple(reasons)
 
 
-def view_model_from_snapshot(snapshot: Dict[str, Any]) -> BootStatusViewModel:
+def view_model_from_snapshot(snapshot: Dict[str, Any], *, live_status=None, now=None, boot_id=None, process_probe=None) -> BootStatusViewModel:
     doctor = snapshot.get("doctor") if isinstance(snapshot.get("doctor"), dict) else {}
     service = snapshot.get("service") if isinstance(snapshot.get("service"), dict) else {}
 
-    ready = bool(doctor.get("ready"))
-    doctor_state = _state_text(doctor.get("state"), "BLOCKED")
-    active_state = _state_text(service.get("active_state"), "UNKNOWN")
-    sub_state = _state_text(service.get("sub_state"), "UNKNOWN")
-
+    preflight_ok = doctor.get("ready") is True
+    doctor_state = _state_text(doctor.get("state"), "UNKNOWN")
     route_count = snapshot.get("route_count")
-    routes = f"{route_count} READ-ONLY" if isinstance(route_count, int) else "READ-ONLY"
-
-    continuity = "VERIFIED" if ready else doctor_state
-    court = "READY" if ready else "BLOCKED"
-    runtime = "ACTIVE" if active_state == "ACTIVE" and sub_state == "RUNNING" else active_state
+    routes = f"{route_count} READ-ONLY" if type(route_count) is int else "READ-ONLY"
     blocked_reasons = _collect_reasons(doctor)
-
-    if ready:
-        message = "Waiting for Mister"
-    elif blocked_reasons:
-        message = blocked_reasons[0]
-    else:
-        message = "Startup blocked"
+    continuity = "UNVERIFIED" if preflight_ok else doctor_state
+    court, runtime, session_id = "BLOCKED", "UNKNOWN", ""
+    try:
+        live = validate_live_status(live_status, now=now, boot_id=boot_id, process_probe=process_probe)
+        continuity, court = "VERIFIED", "READY"
+        runtime = "ACTIVE" if live['state'] == 'ready' and live['modules_healthy'] else "DEGRADED"
+        session_id = live['session_id']
+        message = "Waiting for Mister" if runtime == "ACTIVE" else "Runtime module health degraded"
+    except (ValueError, OSError, TypeError, IndexError, KeyError) as exc:
+        message = (blocked_reasons[0] if blocked_reasons else
+                   ("Preflight passed; " if preflight_ok else "") + str(exc))
+        blocked_reasons += (str(exc),)
 
     return BootStatusViewModel(
         title="VELVET",
@@ -77,10 +78,11 @@ def view_model_from_snapshot(snapshot: Dict[str, Any]) -> BootStatusViewModel:
         physical_control="DISABLED",
         message=message,
         blocked_reasons=blocked_reasons,
+        session_id=session_id,
     )
 
 
-def load_boot_snapshot(path: Path) -> BootStatusViewModel:
+def load_boot_snapshot(path: Path, *, live_status_path=None) -> BootStatusViewModel:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
@@ -111,4 +113,12 @@ def load_boot_snapshot(path: Path) -> BootStatusViewModel:
             },
             "service": {"active_state": "unknown", "sub_state": "unknown"},
         }
-    return view_model_from_snapshot(payload)
+    status_path = Path(live_status_path or os.environ.get('VELVET_RUNTIME_STATUS_PATH',
+                                                        '/opt/velvet/state/runtime_status.json'))
+    try:
+        if status_path.stat().st_size > 64 * 1024:
+            raise ValueError('oversized status')
+        live = json.loads(status_path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        live = None
+    return view_model_from_snapshot(payload, live_status=live)

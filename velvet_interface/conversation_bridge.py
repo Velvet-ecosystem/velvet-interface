@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import socket
 import struct
+import time
 from pathlib import Path
 from typing import Any, Mapping, Union
 from uuid import uuid4
@@ -62,6 +63,18 @@ class UnixConversationBridge:
             raise ConversationBridgeError("conversation result must be a mapping")
         return _validate_result(result)
 
+    def health(self, session_id: str) -> bool:
+        request_id = uuid4().hex
+        response = self._call(dict(protocol=_PROTOCOL, kind='request', request_id=request_id,
+            operation='health', payload={}, **_TRANSPORT_FLAGS))
+        _validate_response_envelope(response, request_id)
+        result = response.get('result')
+        return (response.get('ok') is True and isinstance(result, Mapping)
+                and result.get('schema') == 'velvet.runtime.conversation_health.v1'
+                and result.get('session_id') == session_id and bool(session_id)
+                and all(result.get(key) is False for key in
+                        ('physical_control', 'grants_execution', 'grants_actuation')))
+
     def _call(self, request: Mapping[str, Any]) -> Mapping[str, Any]:
         payload = json.dumps(
             request,
@@ -70,15 +83,16 @@ class UnixConversationBridge:
         ).encode("utf-8")
         if len(payload) > _MAX_FRAME_BYTES:
             raise ConversationBridgeError("conversation request exceeds frame bound")
+        deadline = time.monotonic() + self.timeout_seconds
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
                 client.settimeout(self.timeout_seconds)
                 client.connect(str(self.socket_path))
                 client.sendall(struct.pack("!I", len(payload)) + payload)
-                size = struct.unpack("!I", _recv_exact(client, 4))[0]
+                size = struct.unpack("!I", _recv_exact(client, 4, deadline))[0]
                 if size < 1 or size > _MAX_FRAME_BYTES:
                     raise ConversationBridgeError("conversation response frame is invalid")
-                raw = _recv_exact(client, size)
+                raw = _recv_exact(client, size, deadline)
         except (OSError, socket.timeout) as exc:
             raise ConversationBridgeError("conversation socket unavailable: %s" % exc) from exc
         try:
@@ -90,10 +104,15 @@ class UnixConversationBridge:
         return value
 
 
-def _recv_exact(client: socket.socket, count: int) -> bytes:
+def _recv_exact(client: socket.socket, count: int, deadline=None) -> bytes:
     chunks = []
     remaining = count
     while remaining:
+        if deadline is not None:
+            left = deadline - time.monotonic()
+            if left <= 0:
+                raise ConversationBridgeError('conversation deadline exceeded')
+            client.settimeout(left)
         chunk = client.recv(remaining)
         if not chunk:
             raise ConversationBridgeError("conversation socket closed early")
