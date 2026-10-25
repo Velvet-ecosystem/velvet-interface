@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from velvet_interface.boot_status import load_boot_snapshot
+from velvet_interface.conversation_bridge import UnixConversationBridge, ConversationBridgeError
 
 
 @dataclass(frozen=True)
@@ -26,10 +27,10 @@ def load_velvet_presence_status(
     boot = load_boot_snapshot(Path(boot_snapshot))
     runtime_active = boot.runtime == "ACTIVE"
 
-    socket = Path(conversation_socket)
     try:
-        conversation_available = socket.is_socket()
-    except OSError:
+        conversation_available = (runtime_active and
+            UnixConversationBridge(conversation_socket, timeout_seconds=0.2).health(boot.session_id))
+    except (OSError, ValueError, ConversationBridgeError):
         conversation_available = False
 
     if runtime_active and conversation_available:
@@ -40,7 +41,7 @@ def load_velvet_presence_status(
         message = "Runtime active; local conversation transport is unavailable"
     elif conversation_available:
         state = "DEGRADED"
-        message = "Conversation socket exists without verified active Runtime evidence"
+        message = "Conversation health unverified"
     else:
         state = "WAITING"
         message = boot.message

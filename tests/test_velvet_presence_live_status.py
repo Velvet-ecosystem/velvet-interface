@@ -3,6 +3,8 @@ import json
 import socket
 import tempfile
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
 from velvet_interface.velvet_presence_live_status import load_velvet_presence_status
 
@@ -20,7 +22,7 @@ class VelvetPresenceLiveStatusTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def test_ready_requires_active_runtime_and_real_unix_socket(self):
+    def test_bound_socket_and_preflight_are_insufficient_for_readiness(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             boot = root / "boot.json"
@@ -34,9 +36,9 @@ class VelvetPresenceLiveStatusTests(unittest.TestCase):
             finally:
                 unix_socket.close()
 
-            self.assertEqual(status.state, "READY")
-            self.assertEqual(status.runtime_state, "ACTIVE")
-            self.assertTrue(status.conversation_available)
+            self.assertEqual(status.state, "WAITING")
+            self.assertEqual(status.runtime_state, "UNKNOWN")
+            self.assertFalse(status.conversation_available)
 
     def test_active_runtime_without_socket_is_awake_not_ready(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -44,10 +46,9 @@ class VelvetPresenceLiveStatusTests(unittest.TestCase):
             boot = root / "boot.json"
             self._write_active_boot(boot)
 
-            status = load_velvet_presence_status(
-                boot,
-                root / "conversation.sock",
-            )
+            with patch('velvet_interface.velvet_presence_live_status.load_boot_snapshot',
+                       return_value=SimpleNamespace(runtime='ACTIVE', session_id='session', message='active')):
+                status = load_velvet_presence_status(boot, root / "conversation.sock")
 
             self.assertEqual(status.state, "AWAKE")
             self.assertEqual(status.runtime_state, "ACTIVE")

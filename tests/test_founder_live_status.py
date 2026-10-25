@@ -108,7 +108,7 @@ class FounderLiveStatusTests(unittest.TestCase):
             self.assertEqual(model.health_event_count, 1)
             self.assertEqual(model.receipt_count, 2)
             self.assertIn(("Body", "OBSERVING"), model.rows())
-            self.assertIn("Waiting for Mister", model.message)
+            self.assertIn("initialization unverified", model.message)
 
     def test_missing_body_snapshot_is_honest(self):
         with tempfile.TemporaryDirectory() as directory:
