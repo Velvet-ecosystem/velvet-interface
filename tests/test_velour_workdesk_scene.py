@@ -1,4 +1,6 @@
 import tempfile
+import sys
+import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -22,13 +24,19 @@ class WorkDeskSceneTests(unittest.TestCase):
 
     def test_bridge_requires_readonly_authority_none(self):
         bridge = WorkDeskBridge(Path("fixture"))
-        with patch("services.founder_work_desk.load_workdesk_file", return_value={}):
-            with patch("services.founder_work_desk.workdesk_report", return_value={
-                "schema": "velvet.runtime.workdesk.report.v1", "authority": "execute",
-                "read_only": True, "mode": "ghost",
-            }):
-                with self.assertRaises(WorkDeskUnavailable):
-                    bridge.read()
+        package = types.ModuleType("services")
+        package.__path__ = []
+        runtime = types.ModuleType("services.founder_work_desk")
+        runtime.load_workdesk_file = lambda path: {}
+        runtime.workdesk_report = lambda document: {
+            "schema": "velvet.runtime.workdesk.report.v1", "authority": "execute",
+            "read_only": True, "mode": "ghost",
+        }
+        with patch.dict(sys.modules, {
+            "services": package, "services.founder_work_desk": runtime,
+        }):
+            with self.assertRaises(WorkDeskUnavailable):
+                bridge.read()
 
 if __name__ == "__main__":
     unittest.main()
