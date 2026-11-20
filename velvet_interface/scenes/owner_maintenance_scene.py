@@ -77,6 +77,19 @@ class OwnerMaintenanceScene(Scene):
         except Exception:
             return False
 
+    def _workdesk_available(self) -> bool:
+        if self._router is None:
+            return False
+        try:
+            return "velour_workdesk" in self._router.list_scenes()
+        except Exception:
+            return False
+
+    def _open_workdesk(self) -> bool:
+        if not self._has_access() or not self._workdesk_available():
+            return False
+        return bool(self._router.navigate("velour_workdesk"))
+
     def _surface_studio_available(self) -> bool:
         if self._router is None:
             return False
@@ -225,5 +238,9 @@ class OwnerMaintenanceScene(Scene):
         back = QPushButton("Back to Backroom")
         back.clicked.connect(self._go_back)
         root.addWidget(studio)
+        workdesk = QPushButton("Open Velour Work Desk")
+        workdesk.setEnabled(self._workdesk_available())
+        workdesk.clicked.connect(self._open_workdesk)
+        root.addWidget(workdesk)
         root.addWidget(back)
         return widget
