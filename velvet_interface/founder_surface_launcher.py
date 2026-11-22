@@ -130,6 +130,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="do not register the trusted built-in Eleanor Engineering scene",
     )
     parser.add_argument(
+        "--workdesk-snapshot",
+        type=Path,
+        default=Path(os.environ.get("VELVET_WORKDESK_SNAPSHOT_PATH", ".velvet-dev/founder-workdesk.json")),
+        help="bounded local owner-exported ghost Work Desk snapshot; never a live connector",
+    )
+    parser.add_argument(
+        "--disable-velour-workdesk", action="store_true",
+        help="disable the owner-maintenance-only Work Desk scene",
+    )
+    parser.add_argument(
         "--boot-snapshot",
         type=Path,
         default=Path(
@@ -472,6 +482,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         except (ImportError, ValueError, OSError) as exc:
             eleanor_scene = None
             print("Eleanor Engineering surface unavailable: %s" % exc, file=sys.stderr)
+
+    workdesk_scene = None
+    if not args.disable_velour_workdesk:
+        try:
+            from velvet_interface.workdesk_bridge import WorkDeskBridge
+            from velvet_interface.scenes.velour_workdesk_scene import VelourWorkDeskScene
+
+            workdesk_scene = VelourWorkDeskScene(
+                bridge=WorkDeskBridge(args.workdesk_snapshot),
+                access_provider=_owner_maintenance_unlocked,
+            )
+            workdesk_scene.bind_router(router)
+            router.register_scene(workdesk_scene)
+        except (ImportError, ValueError, OSError) as exc:
+            print("Velour Work Desk unavailable: %s" % exc, file=sys.stderr)
 
     library_scene = None
     try:
